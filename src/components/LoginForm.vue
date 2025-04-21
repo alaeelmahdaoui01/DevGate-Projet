@@ -1,63 +1,58 @@
 <template>
-<form @submit.prevent="handleSignUP" class="register">
-    <h2></h2>
-    <input type="text" required placeholder="Display name" v-model="displayName">
+<form @submit.prevent="handleLogin" class="login">
     <input type="email" required placeholder="Your email" v-model="email">
     <input type="password" required placeholder="Your password" v-model="password">
-    <input type="submit" value="Sign up">
+    <input type="submit" value="Login">
     <div class="error">{{ error }}</div>
 </form>
 </template>
 
 <script>
-import { auth, db } from "../Firebase/config.js"; // make sure you export db not app
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { auth, db } from "../Firebase/config.js";
 
 export default {
-  name: "SignupForm",
+  name: "LoginForm",
   data() {
     return {
-      displayName: "",
       email: "", 
       password: "",
-      error: "",
+      error: ""
     };
   },
   methods: {
-    async handleSignUP() {
+    async handleLogin() {
       try {
-        // Create the user
-        const userCredential = await createUserWithEmailAndPassword(auth, this.email, this.password);
+        const userCredential = await signInWithEmailAndPassword(auth, this.email, this.password);
         const user = userCredential.user;
         this.error = "";
 
-        // Reference the document
+        // Fetch user role from Firestore
         const userDocRef = doc(db, "users", user.uid);
+        const userDoc = await getDoc(userDocRef);
 
-        // Set the user data
-        await setDoc(userDocRef, {
-          createdAt: new Date(),
-          displayName: this.displayName,
-          email: this.email,
-          projects: [],
-          certificates: [],
-          objectives:[],
-          competences: []
-        });
+        if (userDoc.exists()) {
+          const role = userDoc.data().role;
 
-        this.$router.push("/dashboard");
+          // You can check role and redirect accordingly if needed
+          this.$router.push("/dashboard");
+        } else {
+          this.error = "User data not found.";
+        }
       } catch (err) {
-        this.error = err.message;
+        this.error = "No account found with this email or Incorrect password.";
+        console.error("Login error:", err);
       }
     }
   }
 };
 </script>
 
-  
+
+
 <style scoped>
-.register {
+.login {
   width: 100%;
   max-width: 400px;
   margin: 0 auto;
@@ -66,16 +61,8 @@ export default {
   gap: 1.5rem;
 }
 
-.register h2 {
-  color: #1a365d;
-  font-size: 1.5rem;
-  margin-bottom: 0.5rem;
-  text-align: center;
-}
-
-.register input[type="text"],
-.register input[type="email"],
-.register input[type="password"] {
+.login input[type="email"],
+.login input[type="password"] {
   padding: 0.875rem 1rem;
   background: white;
   border: 1px solid #e2e8f0;
@@ -86,17 +73,18 @@ export default {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-.register input:focus {
+.login input[type="email"]:focus,
+.login input[type="password"]:focus {
   border-color: #3182ce;
   outline: none;
   box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.2);
 }
 
-.register input::placeholder {
+.login input::placeholder {
   color: #a0aec0;
 }
 
-.register input[type="submit"] {
+.login input[type="submit"] {
   padding: 0.875rem;
   background-color: #3182ce;
   color: white;
@@ -109,7 +97,7 @@ export default {
   margin-top: 0.5rem;
 }
 
-.register input[type="submit"]:hover {
+.login input[type="submit"]:hover {
   background-color: #2c5282;
   transform: translateY(-1px);
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
