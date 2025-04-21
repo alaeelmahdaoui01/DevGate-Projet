@@ -5,7 +5,7 @@
       <div class="welcome-message">
         <h1>Welcome to DevGate</h1>
         <p>Connect with fellow developers. Share ideas. Build your network!</p>
-        <router-link to="/signup" class="cta-button">Join the Community</router-link>
+        <router-link to="/login" class="cta-button">Join the Community</router-link>
       </div>
     </main>
     <div class="blur-circle"></div>
@@ -25,17 +25,16 @@ export default {
 
 <style scoped>
 .home-container {
-  position: relative;
   min-height: 100vh;
-  background-color: #1e1e2f;
-  color: white;
-  overflow: hidden;
+  background-color: #f5f7fa;
+  color: #2d3748;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .content-wrapper {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 80px 2rem 2rem; /* Matches navbar height + padding */
+  padding: 100px 2rem 2rem;
   width: 100%;
   box-sizing: border-box;
 }
@@ -45,53 +44,53 @@ export default {
   max-width: 800px;
   margin: 0 auto;
   padding: 4rem 2rem;
-  z-index: 1;
   position: relative;
 }
 
 .welcome-message h1 {
   font-size: 2.75rem;
+  font-weight: 600;
   margin-bottom: 1.5rem;
-  background: linear-gradient(to right, #ffffff, #c9d6ff);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: #1a365d;
+  line-height: 1.2;
 }
 
 .welcome-message p {
   font-size: 1.25rem;
-  color: rgba(255, 255, 255, 0.8);
+  color: #4a5568;
   margin-bottom: 2.5rem;
   line-height: 1.6;
+  font-weight: 400;
 }
 
 .cta-button {
   display: inline-block;
-  background: linear-gradient(135deg, #ff5e7d 0%, #ff2d5f 100%);
+  background-color: #3182ce;
   color: white;
-  padding: 0.875rem 2rem;
+  padding: 0.875rem 2.5rem;
   font-size: 1.125rem;
   font-weight: 500;
-  border-radius: 50px;
+  border-radius: 6px;
   text-decoration: none;
-  box-shadow: 0 4px 15px rgba(255, 45, 95, 0.3);
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   border: none;
   cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .cta-button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(255, 45, 95, 0.4);
+  background-color: #2c5282;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .blur-circle {
   position: absolute;
-  width: 400px;
-  height: 400px;
+  width: 300px;
+  height: 300px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(100, 108, 255, 0.2), transparent 70%);
-  filter: blur(80px);
+  background: radial-gradient(circle, rgba(49, 130, 206, 0.1) 0%, transparent 70%);
+  filter: blur(40px);
   top: 20%;
   left: 10%;
   z-index: 0;
@@ -103,17 +102,21 @@ export default {
     transform: translate(0, 0);
   }
   50% {
-    transform: translate(50px, 50px);
+    transform: translate(30px, 30px);
   }
 }
 
 @media (max-width: 768px) {
+  .content-wrapper {
+    padding: 80px 1.5rem 2rem;
+  }
+  
   .welcome-message {
-    padding: 3rem 1.5rem;
+    padding: 2rem 1rem;
   }
   
   .welcome-message h1 {
-    font-size: 2.25rem;
+    font-size: 2rem;
   }
   
   .welcome-message p {
@@ -121,9 +124,8 @@ export default {
   }
   
   .blur-circle {
-    width: 300px;
-    height: 300px;
-    filter: blur(60px);
+    width: 200px;
+    height: 200px;
   }
 }
 </style>
