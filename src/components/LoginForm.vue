@@ -3,14 +3,15 @@
     <input type="email" required placeholder="Your email" v-model="email">
     <input type="password" required placeholder="Your password" v-model="password">
     <input type="submit" value="Login">
+    <button @click.prevent="handleGoogleLogin">Login with Google</button>
     <div class="error">{{ error }}</div>
 </form>
 </template>
 
 <script>
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
-import { auth, db } from "../Firebase/config.js";
+import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { auth, db, provider } from "../Firebase/config.js";
 
 export default {
   name: "LoginForm",
@@ -33,7 +34,6 @@ export default {
         const userDoc = await getDoc(userDocRef);
 
         if (userDoc.exists()) {
-          const role = userDoc.data().role;
 
           // You can check role and redirect accordingly if needed
           this.$router.push("/dashboard");
@@ -44,6 +44,32 @@ export default {
         this.error = "No account found with this email or Incorrect password.";
         console.error("Login error:", err);
       }
+    },
+    async handleGoogleLogin() {
+        try {
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+
+        const userRef = doc(db, "users", user.uid);
+        const docSnap = await getDoc(userRef);
+
+        if (!docSnap.exists()) {
+            await setDoc(userRef, {
+            createdAt: new Date(),
+            displayName: user.displayName,
+            email: user.email,
+            role: "user",
+            projects: [],
+            certificates: [],
+            objectives: [],
+            competences: []
+            });
+        }
+
+        this.$router.push("/dashboard");
+        } catch (err) {
+        this.error = err.message;
+        }
     }
   }
 };
@@ -108,5 +134,24 @@ export default {
   font-size: 0.875rem;
   text-align: center;
   margin-top: 0.25rem;
+}
+
+
+.login button {
+  padding: 0.875rem;
+  background-color: #db4437;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 0.5rem;
+}
+
+
+.login button:hover {
+  background-color: #c23321;
 }
 </style>

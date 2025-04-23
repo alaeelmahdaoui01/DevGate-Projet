@@ -5,14 +5,15 @@
     <input type="email" required placeholder="Your email" v-model="email">
     <input type="password" required placeholder="Your password" v-model="password">
     <input type="submit" value="Sign up">
+    <button @click.prevent="handleGoogleSignup">Sign up with Google</button>
     <div class="error">{{ error }}</div>
 </form>
 </template>
 
 <script>
-import { auth, db } from "../Firebase/config.js"; // make sure you export db not app
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import { auth, db } from "../Firebase/config.js";
+import { createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 
 export default {
   name: "SignupForm",
@@ -27,24 +28,50 @@ export default {
   methods: {
     async handleSignUP() {
       try {
-        // Create the user
         const userCredential = await createUserWithEmailAndPassword(auth, this.email, this.password);
         const user = userCredential.user;
         this.error = "";
 
-        // Reference the document
         const userDocRef = doc(db, "users", user.uid);
 
-        // Set the user data
         await setDoc(userDocRef, {
           createdAt: new Date(),
           displayName: this.displayName,
           email: this.email,
           projects: [],
           certificates: [],
-          objectives:[],
+          objectives: [],
           competences: []
         });
+
+        this.$router.push("/dashboard");
+      } catch (err) {
+        this.error = err.message;
+      }
+    },
+
+    async handleGoogleSignup() {
+      const provider = new GoogleAuthProvider();
+      try {
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+        this.error = "";
+
+        const userDocRef = doc(db, "users", user.uid);
+        const docSnap = await getDoc(userDocRef);
+
+        // Only set data if user doesn't already exist
+        if (!docSnap.exists()) {
+          await setDoc(userDocRef, {
+            createdAt: new Date(),
+            displayName: user.displayName || "",
+            email: user.email,
+            projects: [],
+            certificates: [],
+            objectives: [],
+            competences: []
+          });
+        }
 
         this.$router.push("/dashboard");
       } catch (err) {
@@ -54,6 +81,7 @@ export default {
   }
 };
 </script>
+
 
   
 <style scoped>
@@ -120,5 +148,23 @@ export default {
   font-size: 0.875rem;
   text-align: center;
   margin-top: 0.25rem;
+}
+
+.register button {
+  padding: 0.875rem;
+  background-color: #db4437;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 0.5rem;
+}
+
+
+.register button:hover {
+  background-color: #c23321;
 }
 </style>
