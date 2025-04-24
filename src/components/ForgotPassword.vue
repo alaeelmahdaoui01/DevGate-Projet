@@ -6,7 +6,7 @@
     <input type="email" required placeholder="Your email" v-model="email"/>
     <input type="submit" value="Reset"/>
 
-    <div class="message">{{ message }}</div>
+    <div class="message" v-show="ismessage">{{ message }}</div>
 </form>
 </template>
 
@@ -20,15 +20,20 @@ export default {
     return {
       email: "", 
       message: "",
+      ismessage : false ,
     };
   },
   methods: {
     async resetPassword() {
       try {
         await sendPasswordResetEmail(auth, this.email);
+        this.ismessage=true
         this.message = "If your account exists, you will receive an email.";
+
       } catch (err) {
+        this.ismessage=true
         this.message = err.message;
+        
       }
     }
   }
@@ -37,65 +42,64 @@ export default {
 
 <style scoped>
 .reset {
-  width: 100%;
-  max-width: 400px;
-  margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  animation: fadeInUp 0.6s ease-out forwards;
 }
 
-.reset input[type="email"] {
-  padding: 0.875rem 1rem;
-  background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  color: #2d3748;
+.reset input:not([type="submit"]) {
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  border: 2px solid #e2e8f0;
   font-size: 1rem;
-  transition: all 0.2s ease;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: rgba(255, 255, 255, 0.8);
 }
 
-.reset input[type="email"]:focus {
-  border-color: #3182ce;
+.reset input:not([type="submit"]):focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.2);
-}
-
-.reset input::placeholder {
-  color: #a0aec0;
+  border-color: #ec4899;
+  box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.2);
 }
 
 .reset input[type="submit"] {
-  padding: 0.875rem;
-  background-color: #3182ce;
+  background: linear-gradient(to right, #ec4899, #8b5cf6);
   color: white;
+  padding: 1rem;
   border: none;
-  border-radius: 6px;
+  border-radius: 12px;
   font-size: 1rem;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
 }
 
 .reset input[type="submit"]:hover {
-  background-color: #2c5282;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(to right, #db2777, #7c3aed);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
 }
 
 .message {
-  color: #3182ce;
-  font-size: 0.875rem;
   text-align: center;
-  margin-top: 0.25rem;
-  line-height: 1.4;
+  padding: 0.75rem;
+  border-radius: 8px;
+  margin-top: 0.5rem;
+  font-size: 0.95rem;
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
 }
 
-.error {
-  color: #e53e3e;
-  font-size: 0.875rem;
-  text-align: center;
-  margin-top: 0.25rem;
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>
