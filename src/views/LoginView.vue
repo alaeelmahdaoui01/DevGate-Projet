@@ -157,15 +157,14 @@
   }
   
   .form-container h2 {
-    font-size: 2rem;
-    font-weight: 700;
-    margin-bottom: 2rem;
-    background: linear-gradient(90deg, #3b82f6, #6366f1);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-align: center;
-    position: relative;
-  }
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  color: #6366f1; /* Chose the second gradient color for balance */
+  text-align: center;
+  position: relative;
+}
+
   
   .form-container h2::after {
     content: '';

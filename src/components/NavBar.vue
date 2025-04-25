@@ -42,16 +42,14 @@
   }
   
   .brand a {
-    font-size: 1.5rem;
-    font-weight: 700;
-    text-decoration: none;
-    color: #1e293b;
-    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    position: relative;
-    transition: all 0.3s ease;
-  }
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-decoration: none;
+  color: #3b82f6; /* Chose the first gradient color for a clean look */
+  position: relative;
+  transition: all 0.3s ease;
+}
+
   
   .brand a:hover {
     transform: translateY(-1px);

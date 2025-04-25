@@ -151,17 +151,15 @@ export default {
   box-shadow: 0 30px 60px -10px rgba(0, 0, 0, 0.2);
 }
 
+
 .welcome-message h1 {
   font-size: 3.5rem;
   font-weight: 800;
   margin-bottom: 1.5rem;
-  background: linear-gradient(90deg, #3b82f6, #6366f1, #8b5cf6);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #6366f1; /* You can choose any one of the gradient colors */
   position: relative;
   display: inline-block;
 }
-
 .welcome-message h1::after {
   content: '';
   position: absolute;
@@ -356,10 +354,9 @@ export default {
   font-size: 1.5rem;
   font-weight: 700;
   margin-bottom: 1rem;
-  background: linear-gradient(90deg, #3b82f6, #6366f1);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #3b82f6; /* Picked the first gradient color */
 }
+
 
 .footer-brand p {
   color: #475569;
