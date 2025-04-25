@@ -3,7 +3,7 @@
         <nav class="navbar">
             <div class="buttons-container">
                 <router-link to="/dashboard" class="button">Dashboard</router-link>
-                <router-link to="/#" class="button">Skills</router-link>
+                <router-link to="/#" class="button">Skills Tracker</router-link>
                 <router-link to="/#" class="button">Projects</router-link>
                 <router-link to="/#" class="button">Objectives</router-link>
                 <router-link to="/#" class="button">Timeline</router-link>
