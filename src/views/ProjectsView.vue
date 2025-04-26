@@ -7,14 +7,14 @@
 
     <div class="flex justify-between items-center mb-4">
       <div>
-        <label for="viewToggle" class="mr-2">View:</label>
+        <label for="viewToggle" class="mr-2">View:   </label>
         <select v-model="viewMode" id="viewToggle" class="select">
           <option value="gallery">Gallery</option>
           <option value="list">List</option>
         </select>
       </div>
       <div>
-        <input v-model="searchStack" placeholder="Filter by stack..." class="input" />
+        <input v-model="searchStack" placeholder="Filter by stack or title..." class="input" />
       </div>
     </div>
 
@@ -34,36 +34,51 @@
       <div
         v-for="project in filteredProjects"
         :key="project.id"
-        class="border rounded p-4 mb-2 flex justify-between items-center"
+        class="project-item"
       >
-        <div>
-          <h3 class="font-semibold">{{ project.title }}</h3>
-          <p>{{ project.description }}</p>
-          <p class="text-sm text-gray-500">
-            Stack: {{ Array.isArray(project.stack) ? project.stack.join(', ') : 'N/A' }}
-          </p>
+        <div class="project-content">
+          <h3 class="project-title">{{ project.title }}</h3>
+          <p class="project-description">{{ project.description }}</p>
+          <div class="project-meta">
+            <p class="project-stack">
+              Stack: {{ Array.isArray(project.stack) ? project.stack.join(', ') : 'N/A' }}
+            </p>
+            <a 
+              v-if="project.githubLink" 
+              :href="project.githubLink" 
+              target="_blank"
+              class="github-link"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+              </svg>
+              GitHub
+            </a>
+          </div>
         </div>
-        <div class="flex gap-2">
+        <div class="project-actions">
           <button class="btn-sm" @click="editProject(project)">Edit</button>
           <button class="btn-sm btn-danger" @click="deleteProject(project.id)">Delete</button>
         </div>
       </div>
     </div>
 
-    <div v-if="showModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div v-if="showModal" class="modal-overlay">
       <ProjectModal @close="closeModal" @saved="onProjectSaved" />
     </div>
 
-    <div v-if="showEditModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div v-if="showEditModal" class="modal-overlay">
       <EditProjectModal 
         :selectedProject="selectedProject"
         @close="closeModal"
         @saved="onProjectSaved"
       />
     </div>
-
   </div>
 </template>
+
+
+
 
 <script>
 import { doc, getDoc } from 'firebase/firestore'
@@ -96,10 +111,15 @@ export default {
   computed: {
     filteredProjects() {
       if (!this.searchStack) return this.projects
-      const titleFilter = this.searchStack.toLowerCase()
-      return this.projects.filter(p =>
-        p.title?.toLowerCase().includes(titleFilter)
-      )
+      const filterText = this.searchStack.toLowerCase()
+      
+      return this.projects.filter(p => {
+        const matchesTitle = p.title?.toLowerCase().includes(filterText)
+        const matchesStack = p.stack?.some(stackItem =>
+          stackItem.toLowerCase().includes(filterText)
+        )
+        return matchesTitle || matchesStack
+      })
     }
   },
   methods: {
@@ -168,14 +188,12 @@ export default {
 
 
 <style scoped>
-
 /* Base container styles */
 .p-6 {
   padding: 1.5rem;
-  padding-top: 6rem; /* Added space for fixed navbar */
+  padding-top: 6rem;
   max-width: 1200px;
   margin: 0 auto;
-  animation: fadeIn 0.6s ease-out forwards;
   min-height: 100vh;
   background: linear-gradient(135deg, #f0f4ff, #dbeafe);
 }
@@ -240,7 +258,6 @@ export default {
 .btn-primary:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
-  background-position: right center;
 }
 
 .btn-sm {
@@ -270,82 +287,131 @@ export default {
 }
 
 /* Form elements */
-.select {
-  padding: 0.5rem 1rem 0.5rem 0.75rem;
-  border-radius: 0.5rem;
-  border: 1px solid rgba(203, 213, 225, 0.5);
-  background: rgba(255, 255, 255, 0.8);
-  font-size: 0.875rem;
-  transition: all 0.2s ease;
-}
-
-.select:focus {
-  outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-}
-
-.input {
+.select, .input {
   padding: 0.5rem 1rem;
   border-radius: 0.5rem;
   border: 1px solid rgba(203, 213, 225, 0.5);
   background: rgba(255, 255, 255, 0.8);
   font-size: 0.875rem;
   transition: all 0.2s ease;
-  width: 200px;
 }
 
-.input:focus {
+.select:focus, .input:focus {
   outline: none;
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
-/* Project views */
-.grid {
+.input {
+  width: 200px;
+}
+
+/* Gallery View */
+.projects-grid {
   display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 1.5rem;
+  width: 100%;
 }
 
-/* List view styles */
-.border.rounded.p-4.mb-2 {
-  background: rgba(255, 255, 255, 0.95);
-  border: 1px solid rgba(203, 213, 225, 0.3) !important;
+/* List View Styles */
+.project-item {
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid rgba(203, 213, 225, 0.25);
   transition: all 0.3s ease;
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
 }
 
-.border.rounded.p-4.mb-2:hover {
+.project-item:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-  border-color: rgba(59, 130, 246, 0.3) !important;
+  box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.35);
 }
 
-.font-semibold {
+.project-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.project-title {
   font-weight: 600;
-  color: #1e293b;
+  color: #1e40af;
+  font-size: 1.125rem;
+  margin-bottom: 0.5rem;
 }
 
-.text-sm.text-gray-500 {
-  font-size: 0.875rem;
+.project-description {
+  color: #4b5563;
+  margin-bottom: 0.5rem;
+  line-height: 1.5;
+}
+
+.project-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.project-stack {
+  font-size: 0.8125rem;
   color: #64748b;
 }
 
-/* Animations */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+.github-link {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.8125rem;
+  color: #3b82f6;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.github-link:hover {
+  color: #2563eb;
+}
+
+.github-link svg {
+  width: 16px;
+  height: 16px;
+}
+
+.project-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: 1.5rem;
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .projects-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
-/* Responsive design */
 @media (max-width: 768px) {
   .p-6 {
-    padding-top: 5rem; /* Slightly less padding on mobile */
+    padding-top: 5rem;
   }
   
   .flex.justify-between.items-center.mb-6,
@@ -359,53 +425,21 @@ export default {
     width: 100%;
   }
   
-  .grid {
+  .projects-grid {
     grid-template-columns: 1fr;
   }
-}
 
-/* Decorative elements */
-.p-6::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, #3b82f6, #6366f1, #8b5cf6);
-  animation: rainbow 8s linear infinite;
-  background-size: 400% 100%;
-  border-radius: 4px 4px 0 0;
-}
-
-@keyframes rainbow {
-  0% {
-    background-position: 0% 50%;
+  .project-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
   }
-  100% {
-    background-position: 100% 50%;
+
+  .project-actions {
+    margin-left: 0;
+    width: 100%;
+    justify-content: flex-end;
   }
 }
 
-
-/* Replace your existing .grid styles with these */
-.projects-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr); /* Always 3 columns */
-  gap: 1.5rem;
-  width: 100%;
-}
-
-/* Responsive adjustments */
-@media (max-width: 1024px) {
-  .projects-grid {
-    grid-template-columns: repeat(2, 1fr); /* 2 columns on tablets */
-  }
-}
-
-@media (max-width: 640px) {
-  .projects-grid {
-    grid-template-columns: 1fr; /* 1 column on mobile */
-  }
-}
 </style>
