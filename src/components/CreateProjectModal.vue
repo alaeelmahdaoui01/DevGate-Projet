@@ -53,8 +53,6 @@ import { collection, doc, addDoc, updateDoc, serverTimestamp, arrayUnion } from 
 import { db } from '@/Firebase/config.js'
 import { getUser, waitForAuthInit } from '@/Firebase/Authentification/getUser'
 
-import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
-import { storage } from '@/Firebase/config.js' // make sure you export and import storage instance
 
 
 export default {
@@ -79,22 +77,7 @@ export default {
     }
   },
 
-  watch: {
-    selectedProject: {
-      immediate: true,
-      handler(project) {
-        if (project) {
-          this.title = project.title || ""
-          this.description = project.description || ""
-          this.stackInput = project.stackInput || ""
-          this.githubLink = project.githubLink || ""
-        } else {
-          this.resetForm()
-        }
-      }
-    }
-  },
-
+ 
   async created() {
     try {
       await waitForAuthInit()
@@ -116,6 +99,7 @@ export default {
       this.stackInput = ""
       this.githubLink = ""
       this.message = ""
+      this.stackInput = ""
     },
 
     async createProject() {
@@ -164,7 +148,7 @@ export default {
             projects: arrayUnion({
               id: projectRef.id,
               title: project.title,
-              //stackInput: project.stackInput,
+              stack: project.stack,
               githubLink: project.githubLink,
               //createdAt: serverTimestamp(),
               imageUrl,

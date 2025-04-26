@@ -56,7 +56,7 @@
 
     <div v-if="showEditModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
       <EditProjectModal 
-        :project="selectedProject"
+        :selectedProject="selectedProject"
         @close="closeModal"
         @saved="onProjectSaved"
       />
@@ -116,8 +116,8 @@ export default {
     editProject(project) {
       console.log(project); // Debugging
       this.showModal = false
-      this.selectedProject = project
       this.showEditModal = true
+      this.selectedProject = project
     },
     async deleteProject(id) {
       try {
