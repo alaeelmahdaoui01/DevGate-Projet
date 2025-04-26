@@ -19,7 +19,7 @@
     </div>
 
     <!-- Gallery View -->
-    <div v-if="viewMode === 'gallery'" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+    <div v-if="viewMode === 'gallery'" class="projects-grid">
       <ProjectCard
         v-for="project in filteredProjects"
         :key="project.id"
@@ -51,8 +51,17 @@
     </div>
 
     <div v-if="showModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <ProjectModal  @close="closeModal" />
+      <ProjectModal @close="closeModal" @saved="onProjectSaved" />
     </div>
+
+    <div v-if="showEditModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+      <EditProjectModal 
+        :project="selectedProject"
+        @close="closeModal"
+        @saved="onProjectSaved"
+      />
+    </div>
+
   </div>
 </template>
 
@@ -62,13 +71,17 @@ import { db } from '@/Firebase/config'
 import { waitForAuthInit, getUser } from '@/Firebase/Authentification/getUser'
 
 import ProjectCard from '@/components/ProjectCard.vue'
-import ProjectModal from '@/components/ProjectModal.vue'
+import ProjectModal from '@/components/CreateProjectModal.vue'
+import EditProjectModal from '@/components/EditProjetModal.vue'
+
+import { deleteProject } from '@/Firebase/Firestore/deleteProject';
 
 export default {
   name: 'ProjectsPage',
   components: {
     ProjectCard,
     ProjectModal,
+    EditProjectModal
   },
   data() {
     return {
@@ -76,6 +89,7 @@ export default {
       searchStack: '',
       projects: [],
       showModal: false,
+      showEditModal: false,
       selectedProject: null,
     }
   },
@@ -87,22 +101,35 @@ export default {
         p.title?.toLowerCase().includes(titleFilter)
       )
     }
-
   },
   methods: {
+    onProjectSaved() {
+      this.fetchProjects() // Refresh the projects list
+      this.showModal = false
+      this.showEditModal = false
+    },
     openAddModal() {
       this.selectedProject = null
       this.showModal = true
+      this.showEditModal = false
     },
     editProject(project) {
+      console.log(project); // Debugging
+      this.showModal = false
       this.selectedProject = project
-      this.showModal = true
+      this.showEditModal = true
     },
-    deleteProject(id) {
-      this.projects = this.projects.filter(p => p.id !== id)
+    async deleteProject(id) {
+      try {
+        await deleteProject(id);
+        this.fetchProjects(); // Refresh list after deletion
+      } catch (error) {
+        alert('Error deleting project');
+      }
     },
     closeModal() {
       this.showModal = false
+      this.showEditModal = false
     },
     async fetchProjects() {
       await waitForAuthInit()
@@ -357,6 +384,28 @@ export default {
   }
   100% {
     background-position: 100% 50%;
+  }
+}
+
+
+/* Replace your existing .grid styles with these */
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* Always 3 columns */
+  gap: 1.5rem;
+  width: 100%;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .projects-grid {
+    grid-template-columns: repeat(2, 1fr); /* 2 columns on tablets */
+  }
+}
+
+@media (max-width: 640px) {
+  .projects-grid {
+    grid-template-columns: 1fr; /* 1 column on mobile */
   }
 }
 </style>

@@ -1,21 +1,21 @@
 <template>
-  <div class="relative rounded-xl shadow-md bg-white overflow-hidden hover:shadow-lg transition-all group">
-    <img :src="project.image" alt="Project Image" class="w-full h-48 object-cover" />
-    
-    <!-- Edit/Delete buttons overlay -->
-    <div class="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-      <button 
-        @click.stop="editProject" 
-        class="bg-white p-2 rounded-full shadow-md hover:bg-gray-100 mr-1"
-      >
-        ✏️
-      </button>
-      <button 
-        @click.stop="deleteProject" 
-        class="bg-white p-2 rounded-full shadow-md hover:bg-gray-100 text-red-600"
-      >
-        🗑
-      </button>
+  <div class="project-card">
+    <div class="image-container">
+      <img 
+        :src="project.image || fallbackImage" 
+        alt="Project Image" 
+        class="project-image"
+      />
+      
+      <!-- Edit/Delete buttons overlay -->
+      <div class="action-buttons">
+        <button @click.stop="editProject" class="edit-btn">
+          ✏️
+        </button>
+        <button @click.stop="deleteProject" class="delete-btn">
+          🗑
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -44,9 +44,61 @@ export default {
 };
 </script>
 
+
 <style scoped>
-/* Optional: Add some transition effects */
-.transition-all {
+.project-card {
+  width: 100%;
+  aspect-ratio: 1/1; /* Makes card square */
+}
+
+.image-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
+}
+
+.image-container:hover {
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+}
+
+.project-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.action-buttons {
+  position: absolute;
+  bottom: 0.5rem;
+  right: 0.5rem;
+  display: flex;
+  gap: 0.5rem;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.image-container:hover .action-buttons {
+  opacity: 1;
+}
+
+.edit-btn, .delete-btn {
+  background: white;
+  padding: 0.5rem;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.edit-btn:hover, .delete-btn:hover {
+  transform: scale(1.1);
+}
+
+.delete-btn {
+  color: #ef4444;
 }
 </style>
