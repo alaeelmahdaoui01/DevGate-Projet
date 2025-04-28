@@ -5,7 +5,7 @@
                 <router-link to="/dashboard" class="button">Dashboard</router-link>
                 <router-link to="/#" class="button">Skills Tracker</router-link>
                 <router-link to="/projects" class="button">Projects</router-link>
-                <router-link to="/#" class="button">Objectives</router-link>
+                <router-link to="/objectives" class="button">Objectives</router-link>
                 <router-link to="/#" class="button">Timeline</router-link>
                 <router-link to="/#" class="button">Stats</router-link>
             </div>

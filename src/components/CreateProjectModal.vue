@@ -116,12 +116,7 @@ export default {
 
 
         let imageUrl = ""
-          if (this.imageFile) {
-              const filePath = `projects/${this.user.uid}_${Date.now()}_${this.imageFile.name}`
-              const fileRef = storageRef(storage, filePath)
-              await uploadBytes(fileRef, this.imageFile)
-              imageUrl = await getDownloadURL(fileRef)
-          }
+          
 
           const project = {
           title: this.title || "Untitled Project",
