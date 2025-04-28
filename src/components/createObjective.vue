@@ -10,7 +10,7 @@
           </div>
           
           <div class="form-group">
-            <label>Description</label>
+            <label>Description:</label>
             <textarea v-model="description" rows="3" required class="input"></textarea>
           </div>
           
@@ -23,7 +23,8 @@
             </select>
           </div>
           
-          <div class="form-group">
+          <!-- Progress input appears only if status is not "Completed" -->
+          <div v-if="status !== 'Completed'" class="form-group">
             <label>Progress: {{ progress }}%</label>
             <input type="range" v-model="progress" min="0" max="100" class="slider" />
           </div>
@@ -48,8 +49,6 @@
   import { db } from '@/Firebase/config.js'
   import { getUser, waitForAuthInit } from '@/Firebase/Authentification/getUser'
   
-  
-  
   export default {
     name: "ProjectModal",
     props: {
@@ -65,12 +64,11 @@
         title: "",
         description: "",
         status: "",
-        progress: 0,
+        progress: 0,  // Initially, the progress is set to 0
         message: "",
       }
     },
   
-   
     async created() {
       try {
         await waitForAuthInit()
@@ -90,7 +88,7 @@
         this.title = ""
         this.description = ""
         this.status = ""
-        this.progress = ""
+        this.progress = 0  // Reset progress to 0
         this.message = ""
       },
   
@@ -106,10 +104,7 @@
   
           const userRef = doc(db, "users", user.uid)
   
-  
-            
-  
-            const objective = {
+          const objective = {
             title: this.title || "Untitled Project",
             description: this.description,
             status: this.status,
@@ -117,7 +112,7 @@
             email: user.email,
             createdBy: user.uid,
             createdAt: serverTimestamp(),
-            }
+          }
   
           if (this.selectedObjective) {
             // Update existing project
@@ -132,7 +127,6 @@
                 title: objective.title,
                 status: objective.status,
                 progress: objective.progress,
-                //createdAt: serverTimestamp(),
               })
             })
             this.message = "Objective created successfully!"
@@ -145,6 +139,15 @@
           this.message = "Error: " + err.message
         }
       },
+    },
+  
+    watch: {
+      // Watch for changes to status
+      status(newStatus) {
+        if (newStatus === 'Completed') {
+          this.progress = 100  // Set progress to 100% when status is 'Completed'
+        }
+      }
     }
   }
   </script>

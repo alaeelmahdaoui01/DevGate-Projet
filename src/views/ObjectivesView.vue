@@ -75,9 +75,9 @@
   import { db } from '@/Firebase/config'
   import { waitForAuthInit, getUser } from '@/Firebase/Authentification/getUser'
   
-
+  import CreateObjectiveModal from '@/components/createObjective.vue';
   import EditObjectiveModal from '@/components/EditObjective.vue' ; 
-  import CreateObjectiveModal from '@/components/CreateObjective.vue';
+
   
   import { deleteObjective } from '@/Firebase/Firestore/deleteObjective';
   

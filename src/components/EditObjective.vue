@@ -1,100 +1,127 @@
 <template>
-  <div class="modal-overlay">
-    <div class="modal-content">
-      <div class="form-container">
-        <h2>Progress Tracking</h2>
-
-        <div class="form-group">
+    <div class="modal-overlay">
+      <div class="modal-content">
+        <div class="form-container">
+          <h2>Progress Tracking</h2>
+  
+          <!-- Status Select -->
+          <div class="form-group">
+            <label>Status:</label>
+            <select v-model="status" required class="input">
+              <option disabled value="">Please select status</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Completed">Completed</option>
+            </select>
+          </div>
+  
+          <!-- Progress Slider (conditionally rendered) -->
+          <div v-if="status !== 'Completed'" class="form-group">
             <label>Progress: {{ progress }}%</label>
             <input type="range" v-model="progress" min="0" max="100" class="slider" />
+          </div>
+          
+          <!-- If status is Completed, show a fixed progress value -->
+          <div v-if="status === 'Completed'" class="form-group">
+            <label>Progress: 100%</label>
+          </div>
+  
+          <!-- Description -->
+          <div class="form-group">
+            <label>Description</label>
+            <textarea v-model="description" rows="3" required class="input"></textarea>
+          </div>
+  
+          <!-- Buttons -->
+          <div class="button-group">
+            <button @click="$emit('close')" class="btn-secondary">Cancel</button>
+            <button @click="updateObjective" class="btn-primary">Update Progress</button>
+          </div>
+  
+          <!-- Message -->
+          <p v-if="message" class="message">{{ message }}</p>
         </div>
-
-        <div class="form-group">
-          <label>Description</label>
-          <textarea v-model="description" rows="3" required class="input"></textarea>
-        </div>
-
-        <div class="button-group">
-          <button @click="$emit('close')" class="btn-secondary">Cancel</button>
-          <button @click="updateObjective" class="btn-primary">Update Progress</button>
-        </div>
-
-        <p v-if="message" class="message">{{ message }}</p>
       </div>
     </div>
-  </div>
-</template>
+  </template>
+  
 
-<script>
-import { editObjective } from '@/Firebase/Firestore/editObjective' // Adjust if needed
-
-export default {
-  name: "EditObjModal",
-  props: {
-    selectedObjective: {
-      type: Object,
-      default: null
-    }
-  },
-  data() {
-    return {
-      title: "",
-      description: "",
-      status: "",
-      progress: 0,
-      message: "",
-    }
-  },
-  watch: {
-    selectedObjective: {
-      immediate: true,
-      handler(objective) {
-        if (objective) {
-          this.title = objective.title || ""
-          this.description = objective.description || ""
-          this.status = objective.status || ""
-          this.progress = objective.progress || 0 // corrected "project" to "objective"
-        } else {
-          this.resetForm()
-        }
-      }
-    }
-  },
-  methods: {
-    resetForm() {
-      this.title = ""
-      this.description = ""
-      this.status = ""
-      this.progress = 0
-      this.message = ""
-    },
-    async updateObjective() {
-      this.message = ""
-
-      try {
-        const updatedData = {
-          title: this.title,
-          description: this.description,
-          status: this.status,
-          progress: this.progress,
-        }
-
-        await editObjective(this.selectedObjective.id, updatedData)
-
-        this.message = "Objective updated successfully!"
-        this.$emit('saved')
-        this.$emit('close')
-      } catch (err) {
-        console.error(err)
-        this.message = "Error: " + err.message
+  <script>
+  import { editObjective } from '@/Firebase/Firestore/editObjective' // Adjust if needed
+  
+  export default {
+    name: "EditObjModal",
+    props: {
+      selectedObjective: {
+        type: Object,
+        default: null
       }
     },
-  },
-  mounted() {
-    console.log("Selected objective:", this.selectedObjective)
+    data() {
+      return {
+        title: "",
+        description: "",
+        status: "",
+        progress: 0,
+        message: "",
+      }
+    },
+    watch: {
+      selectedObjective: {
+        immediate: true,
+        handler(objective) {
+          if (objective) {
+            this.title = objective.title || ""
+            this.description = objective.description || ""
+            this.status = objective.status || ""
+            this.progress = objective.progress || 0 // corrected "project" to "objective"
+          } else {
+            this.resetForm()
+          }
+        }
+      },
+      // Watch for changes in status and set progress accordingly
+      status(newStatus) {
+        if (newStatus === 'Completed') {
+          this.progress = 100; // Set progress to 100% if status is 'Completed'
+        }
+      }
+    },
+    methods: {
+      resetForm() {
+        this.title = ""
+        this.description = ""
+        this.status = ""
+        this.progress = 0
+        this.message = ""
+      },
+      async updateObjective() {
+        this.message = ""
+  
+        try {
+          const updatedData = {
+            title: this.title,
+            description: this.description,
+            status: this.status,
+            progress: this.progress,
+          }
+  
+          await editObjective(this.selectedObjective.id, updatedData)
+  
+          this.message = "Objective updated successfully!"
+          this.$emit('saved')
+          this.$emit('close')
+        } catch (err) {
+          console.error(err)
+          this.message = "Error: " + err.message
+        }
+      },
+    },
+    mounted() {
+      console.log("Selected objective:", this.selectedObjective)
+    }
   }
-}
-</script>
+  </script>
+  
 
 <style scoped>
 /* Styles kept the same, no change needed */
