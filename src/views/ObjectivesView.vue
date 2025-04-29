@@ -63,8 +63,9 @@
           @saved="onObjectiveSaved"
         />
       </div>
+      <div v-if="isLoading">Loading...</div>
     </div>
-    <div v-if="isLoading">Loading...</div>
+
   </template>
   
   
