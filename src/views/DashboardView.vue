@@ -1,69 +1,88 @@
 <template>
-    <div class="dashboard-container">
-      <!-- Sidebar -->
-      <aside class="sidebar">
-        <div class="profile-section">
-          <img src="https://sample-videos.com/img/Sample-jpg-image-10mb.jpg" alt="User Avatar" class="profile-avatar" />
-          <h2 class="profile-name">{{ currentUser?.displayName || 'Loading...' }}</h2>
-          <p class="profile-bio">{{  currentUser?.status || 'Loading...'  }}</p>
-          <ul class="profile-details">
-            <li><strong>Repositories:</strong> {{ projects.length }}</li>
-            <li><strong>Location:</strong>{{ currentUser?.location || 'Loading...'  }}</li>
-            <li><strong>LinkedIn:</strong> <a href="https://example.com" target="_blank">{{ currentUser?.linkedin }}</a></li>
-          </ul>
-        </div>
+  <div class="dashboard-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="profile-section">
+        <img
+          :src="userProfile?.photoURL || 'https://via.placeholder.com/150'"
+          alt="User Avatar"
+          class="profile-avatar"
+        />
+        <h2 class="profile-name">{{ userProfile?.displayName || 'Loading...' }}</h2>
+        <p class="profile-bio">{{ userProfile?.status || 'Loading...' }}</p>
+        <ul class="profile-details">
+          <li><strong>Repositories:</strong> {{ projects.length }}</li>
+          <li><strong>Location:</strong> {{ userProfile?.location || 'Loading...' }}</li>
+          <li><strong>LinkedIn:</strong> 
+            <a v-if="userProfile?.linkedin" :href="userProfile.linkedin" target="_blank">{{ userProfile.linkedin }}</a>
+          </li>
+        </ul>
+      </div>
 
-         <!-- Edit Profile Button -->
-         <button 
-          v-if="isCurrentUser"
-          class="edit-profile-btn"
-          @click="editProfile"
+      <!-- Edit Profile Button -->
+      <button 
+        v-if="isCurrentUser"
+        class="edit-profile-btn"
+        @click="editProfile"
+      >
+        Edit Profile
+      </button>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Projects Section -->
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold">Projects</h1>
+      </div>
+      <div>
+        <div
+          v-for="project in projects"
+          :key="project.id"
+          class="project-item"
         >
-          Edit Profile
-        </button>
-
-      </aside>
-  
-      <!-- Main Content -->
-      <main class="main-content">
-        <div class="flex justify-between items-center mb-6">
-          <h1 class="text-2xl font-bold">Projects</h1>
-        </div>
-  
-        <!-- List View -->
-        <div>
-          <div
-            v-for="project in filteredProjects"
-            :key="project.id"
-            class="project-item"
-          >
-            <div class="project-content">
-              <h3 class="project-title">{{ project.title }}</h3>
-              <p class="project-description">{{ project.description }}</p>
-              <div class="project-meta">
-                <p class="project-stack">
-                  Stack: {{ Array.isArray(project.stack) ? project.stack.join(', ') : 'N/A' }}
-                </p>
-                <a
-                  v-if="project.githubLink"
-                  :href="project.githubLink"
-                  target="_blank"
-                  class="github-link"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
-                  </svg>
-                  GitHub
-                </a>
-              </div>
+          <div class="project-content">
+            <h3 class="project-title">{{ project.title }}</h3>
+            <p class="project-description">{{ project.description }}</p>
+            <div class="project-meta">
+              <p class="project-stack">
+                Stack: {{ Array.isArray(project.stack) ? project.stack.join(', ') : 'N/A' }}
+              </p>
+              <a
+                v-if="project.githubLink"
+                :href="project.githubLink"
+                target="_blank"
+                class="github-link"
+              >
+                GitHub
+              </a>
             </div>
           </div>
         </div>
-      </main>
-    </div>
-  </template>
-  
-  <script>
+      </div>
+
+      <!-- Objectives Section -->
+      <div class="flex justify-between items-center mb-6 mt-10">
+        <h1 class="text-2xl font-bold">Objectives</h1>
+        <!-- <button v-if="isCurrentUser" class="add-objective-btn" @click="$emit('open-create-objective-modal')">
+          Add Objective
+        </button> -->
+      </div>
+      <div>
+        <div v-for="objective in objectives" :key="objective.id" class="objective-item">
+          <div class="objective-content">
+            <h3 class="objective-title">{{ objective.title }}</h3>
+            <p class="objective-description">{{ objective.description }}</p>
+            <p class="objective-status">Status: {{ objective.status }}</p>
+            <p class="objective-progress">Progress: {{ objective.progress }}%</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</template>
+
+<script>
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/Firebase/config';
 import { waitForAuthInit, getUser } from '@/Firebase/Authentification/getUser';
@@ -79,44 +98,26 @@ export default {
   data() {
     return {
       projects: [],
-      currentUser: null,
+      userProfile: null, // Data for the user specified by `userId`
+      currentUser: null, // Data for the currently logged-in user
     };
   },
   computed: {
-    filteredProjects() {
-      return this.projects; // Display all projects in the dashboard
-    },
     isCurrentUser() {
       return this.currentUser && this.currentUser.uid === this.userId;
     },
   },
   methods: {
-    async fetchProjects() {
-      await waitForAuthInit(); // Wait for authentication initialization
-      const user = getUser();
-
-      if (!user) {
-        console.warn('User not logged in');
-        return;
-      }
-
-      this.currentUser = user; // Set current user from `getUser()`
-
+    async fetchUserProfile() {
       try {
-        const userDocRef = doc(db, 'users', user.uid);
+        const userDocRef = doc(db, 'users', this.userId);
         const userDocSnap = await getDoc(userDocRef);
 
         if (userDocSnap.exists()) {
           const userData = userDocSnap.data();
+          this.userProfile = userData;
 
-          // Merge Firestore displayName if available
-          if (userData.displayName) {
-            this.currentUser.displayName = userData.displayName;
-            this.currentUser.status = userData.status;
-            this.currentUser.location = userData.location;
-          }
-
-          // Fetch projects
+          // Fetch user's projects
           const userProjects = userData.projects || [];
           const fetchedProjects = [];
           for (const proj of userProjects) {
@@ -130,19 +131,26 @@ export default {
           console.warn('User document not found in Firestore');
         }
       } catch (error) {
-        console.error('Error fetching user data or projects:', error);
+        console.error('Error fetching user profile or projects:', error);
+      }
+    },
+    async fetchCurrentUser() {
+      await waitForAuthInit();
+      const user = getUser();
+      if (user) {
+        this.currentUser = user;
       }
     },
     editProfile() {
       this.$router.push(`/editprofile/${this.userId}`);
     },
   },
-  mounted() {
-    this.fetchProjects();
+  async mounted() {
+    await this.fetchCurrentUser();
+    await this.fetchUserProfile();
   },
 };
 </script>
-
 
   <style scoped>
   .dashboard-container {

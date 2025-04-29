@@ -46,6 +46,16 @@
           <input id="linkedin" type="text" v-model="updatedLinkedin">
         </div>
 
+        
+        <div class="form-group">
+            <label for="photoURL">Profile Picture</label>
+            <div class="photo-upload">
+                <img :src="updatedPhotoBase64 || 'https://www.shutterstock.com/image-vector/default-avatar-profile-icon-vector-600nw-1745180411.jpg'" alt="Profile" class="photo-preview"/>
+                <label for="photoInput" class="upload-icon">+</label>
+                <input id="photoInput" type="file" accept="image/*" @change="handlePhotoUpload" class="hidden"/>
+            </div>
+        </div>
+
         <!-- Submit Button -->
         <button type="submit" class="submit-btn">Update Profile</button>
       </form>
@@ -56,6 +66,8 @@
 <script>
 import { getDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/Firebase/config';
+// import { getAuth, updateEmail } from "firebase/auth";
+
 
 export default {
   name: 'EditProfile',
@@ -67,6 +79,7 @@ export default {
       updatedLocation: '',
       updatedStatus: '',
       updatedLinkedin: '',
+      updatedPhotoBase64: '', // Base64 image string
     };
   },
   methods: {
@@ -83,6 +96,7 @@ export default {
           this.updatedLocation = this.user.location || '';
           this.updatedStatus = this.user.status || '';
           this.updatedLinkedin = this.user.linkedin || '';
+          this.updatedPhotoBase64 = this.user.photoURL || '';
         } else {
           console.warn('User document not found');
         }
@@ -90,34 +104,75 @@ export default {
         console.error('Error fetching user profile:', error.message);
       }
     },
+
+    async handlePhotoUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.updatedPhotoBase64 = reader.result; // Save Base64 string
+      };
+      reader.readAsDataURL(file);
+    },
+
     async updateProfile() {
-      try {
-        const userId = this.$route.params.id; // Assumes route param contains the userId
+        try {
+        const userId = this.$route.params.id;
         const userDocRef = doc(db, 'users', userId);
 
         // Update Firestore with new profile data
         await updateDoc(userDocRef, {
-          displayName: this.updatedName,
-          email: this.updatedEmail,
-          location: this.updatedLocation,
-          status: this.updatedStatus,
-          linkedin: this.updatedLinkedin,
-        });
+            displayName: this.updatedName,
+            email: this.updatedEmail,
+            location: this.updatedLocation,
+            status: this.updatedStatus,
+            linkedin: this.updatedLinkedin,
+            photoURL: this.updatedPhotoBase64, // Save the Base64 string
+    });
+        // const auth = getAuth();
+        // const user = auth.currentUser;
 
-        // Update local state
-        this.user.displayName = this.updatedName;
-        this.user.email = this.updatedEmail;
-        this.user.location = this.updatedLocation;
-        this.user.status = this.updatedStatus;
-        this.user.linkedin = this.updatedLinkedin;
+        // if (user) {
+        //     await updateEmail(user, this.updatedEmail);
+        // } else {
+        // throw new Error("User is not authenticated");
+        // }
+      alert('Profile updated successfully!');
+      this.$router.push(`/profile/${userId}`);
+    } catch (error) {
+      console.error('Error updating profile:', error.message);
+      alert('Failed to update profile. Please try again.');
+    }
+  }
+    // async updateProfile() {
+    //   try {
+    //     const userId = this.$route.params.id; // Assumes route param contains the userId
+    //     const userDocRef = doc(db, 'users', userId);
 
-        alert('Profile updated successfully!');
-        this.$router.push(`/profile/${userId}`);
-      } catch (error) {
-        console.error('Error updating profile:', error.message);
-        alert('Failed to update profile. Please try again.');
-      }
-    },
+    //     // Update Firestore with new profile data
+    //     await updateDoc(userDocRef, {
+    //       displayName: this.updatedName,
+    //       email: this.updatedEmail,
+    //       location: this.updatedLocation,
+    //       status: this.updatedStatus,
+    //       linkedin: this.updatedLinkedin,
+    //     });
+
+    //     // Update local state
+    //     this.user.displayName = this.updatedName;
+    //     this.user.email = this.updatedEmail;
+    //     this.user.location = this.updatedLocation;
+    //     this.user.status = this.updatedStatus;
+    //     this.user.linkedin = this.updatedLinkedin;
+
+    //     alert('Profile updated successfully!');
+    //     this.$router.push(`/profile/${userId}`);
+    //   } catch (error) {
+    //     console.error('Error updating profile:', error.message);
+    //     alert('Failed to update profile. Please try again.');
+    //   }
+    // },
   },
   mounted() {
     this.fetchUserProfile();
@@ -179,4 +234,38 @@ select:focus {
 .submit-btn:hover {
   background-color: #2563eb;
 }
+
+.photo-upload {
+  position: relative;
+  display: inline-block;
+}
+
+.photo-preview {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #d1d5db;
+}
+
+.upload-icon {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background-color: #3b82f6;
+  color: white;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.hidden {
+  display: none;
+}
+
 </style>
