@@ -83,7 +83,7 @@
 <script>
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '@/Firebase/config'
-import { waitForAuthInit, getUser } from '@/Firebase/Authentification/getUser'
+// import { waitForAuthInit, getUser } from '@/Firebase/Authentification/getUser'
 
 import ProjectCard from '@/components/ProjectCard.vue'
 import ProjectModal from '@/components/CreateProjectModal.vue'
@@ -152,36 +152,49 @@ export default {
       this.showEditModal = false
     },
     async fetchProjects() {
-      await waitForAuthInit()
-      const user = getUser()
+            this.isLoading = true;
+            try {
+                const userDocRef = doc(db, 'users', this.id);
+                const userDocSnap = await getDoc(userDocRef);
 
-      if (!user) {
-        console.warn('User not logged in')
-        return
-      }
+                if (userDocSnap.exists()) {
+                    const userData = userDocSnap.data();
+                    const userProjects = userData.projects || [];
+                    const fetchedProjects = [];
 
-      const userDocRef = doc(db, 'users', user.uid)
-      const userDocSnap = await getDoc(userDocRef)
+                    for (const proj of userProjects) {
+                        const projDoc = await getDoc(doc(db, 'projects', proj.id));
+                        if (projDoc.exists()) {
+                            fetchedProjects.push({ id: proj.id, ...projDoc.data() });
+                        }
+                    }
 
-      if (userDocSnap.exists()) {
-        const userData = userDocSnap.data()
-        const userProjects = userData.projects || []
-        const fetchedProjects = []
+                    this.projects = fetchedProjects;
+                }
+            } catch (error) {
+                console.error("Error fetching projects:", error);
+            }
+            this.isLoading = false;
+        },
+  },
+  //mounted() {
+    //this.fetchProjects()
+  //},
 
-        for (const proj of userProjects) {
-          const projDoc = await getDoc(doc(db, 'projects', proj.id))
-          if (projDoc.exists()) {
-            fetchedProjects.push({ id: proj.id, ...projDoc.data() })
-          }
+  props: {
+        id: {
+            type: String,
+            required: true
         }
-
-        this.projects = fetchedProjects
-      }
     },
-  },
-  mounted() {
-    this.fetchProjects()
-  },
+    watch: {
+        id: {
+            immediate: true,
+            handler() {
+                this.fetchProjects();
+            }
+        }
+    }
 }
 </script>
 

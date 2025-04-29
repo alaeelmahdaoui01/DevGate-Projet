@@ -116,7 +116,7 @@ export default {
 
 
         let imageUrl = ""
-
+          
           const project = {
             title: this.title || "Untitled Project",
             description: this.description,
