@@ -1,64 +1,130 @@
 <template>
-    <div class="navbar-container">
-        <nav class="navbar">
-            <div class="buttons-container">
-                <router-link to="/dashboard" class="button">Dashboard</router-link>
-                <router-link to="/projects" class="button">Projects</router-link>
-                <router-link to="/objectives" class="button">Objectives</router-link>
-                <router-link to="/#" class="button">Timeline</router-link>
-            </div>
+  <div class="navbar-container">
+      <nav class="navbar">
+          <div class="buttons-container">
+              <router-link :to="'/dashboard/' + user.uid" class="button">Dashboard</router-link>
+              <router-link :to="'/projects/' + user.uid" class="button">Projects</router-link>
+              <router-link :to="'/objectives/' + user.uid" class="button">Objectives</router-link>
+              <router-link to="/#" class="button">Timeline</router-link>
+          </div>
 
-            <div class="search-container">
-                <input 
-                    type="text" 
-                    placeholder="Search users..." 
-                    class="search-input"
-                    v-model="searchQuery"
-                    @keyup.enter="performSearch"
-                />
-                <button class="search-button" @click="performSearch">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="11" cy="11" r="8"></circle>
-                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                    </svg>
-                </button>
-            </div>
+          <div class="search-container">
+              <input 
+                  type="text" 
+                  placeholder="Search users..." 
+                  class="search-input"
+                  v-model="searchQuery"
+                  @input="searchUsers"
+                  @keyup.enter="performSearch"
+              />
+              <button class="search-button" @click="performSearch">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="11" cy="11" r="8"></circle>
+                      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  </svg>
+              </button>
+              <div v-if="searchResults.length > 0 && searchQuery" class="search-results-dropdown">
+                  <div 
+                      v-for="result in searchResults" 
+                      :key="result.id"
+                      class="search-result-item"
+                      @click="goToUserProfile(result.id)"
+                  >
+                      <img :src="result.photoURL || 'default-avatar-url'" class="search-result-avatar">
+                      <div class="search-result-info">
+                          <div class="search-result-name">{{ result.displayName }}</div>
+                          <div class="search-result-email">{{ result.email }}</div>
+                      </div>
+                  </div>
+              </div>
+          </div>
 
-
-            <div class="usermenu">
-                <!--router-link :to="'/profile/' + user.uid" class="username">
-                    <img :src="URLimg" class="userphoto">
-                </router-link>
-                <router-link :to="'/profile/' + user.uid" class="username"></router-link-->
-                <button class="button" @click="leave">Sign out</button>
-            </div>
-        </nav>
-    </div>
+          <div class="usermenu">
+              <button class="button" @click="leave">Sign out</button>
+          </div>
+      </nav>
+  </div>
 </template>
   
 <script>
 import signOut from '@/Firebase/Authentification/SignOut';
+import { collection, getDocs, query, orderBy, startAt, endAt } from 'firebase/firestore';
+
+import { db } from '@/Firebase/config';
+
 
 export default {
-name: 'UserInfo',
-props: {
-    user: {
-        type: Object,
-        required: true
+    name: 'UserInfo',
+    props: {
+        user: {
+            type: Object,
+            required: true
+        }
+    },
+    data() {
+        return {
+            URLimg: "https://th.bing.com/th/id/OIP.DQdhyRifE5tywz-uIlBKUAHaHa?rs=1&pid=ImgDetMain",
+            searchQuery: '',
+            searchResults: [],
+            searchTimeout: null
+        }
+    },
+    methods: {
+        leave() {
+            signOut();
+            this.$router.push('/');
+        },
+
+
+async searchUsers() {
+  clearTimeout(this.searchTimeout);
+
+  if (!this.searchQuery) {
+    this.searchResults = [];
+    return;
+  }
+
+  this.searchTimeout = setTimeout(async () => {
+    try {
+      const usersRef = collection(db, 'users');
+      const q = query(
+        usersRef,
+        orderBy('displayName'),
+        startAt(this.searchQuery),
+        endAt(this.searchQuery + '\uf8ff')
+      );
+
+      const querySnapshot = await getDocs(q);
+      this.searchResults = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+    } catch (error) {
+      console.error("Error searching users:", error);
+      this.searchResults = [];
     }
-},
-data() {
-    return {
-        URLimg: "https://th.bing.com/th/id/OIP.DQdhyRifE5tywz-uIlBKUAHaHa?rs=1&pid=ImgDetMain",
-        searchQuery: ''  // i should add a method for this search query 
-    }
-},
-methods: {
-    leave() {
-    signOut();
-    this.$router.push('/');
-    }
+  }, 300);
 }
+,
+        performSearch() {
+            if (this.searchResults.length > 0) {
+                this.goToUserProfile(this.searchResults[0].id);
+            }
+        },
+        goToUserProfile(userId) {
+            this.searchQuery = '';
+            this.searchResults = [];
+            this.$router.push(`/projects/${userId}`);
+        }
+    },
+    created() {
+        // Pour fermer les résultats de recherche quand on clique ailleurs
+        document.addEventListener('click', (e) => {
+            if (!this.$el.contains(e.target)) {
+                this.searchResults = [];
+            }
+        });
+    }
 }
 </script>
   
@@ -135,6 +201,56 @@ methods: {
 
 .search-button:hover {
     color: #3b82f6;
+}
+
+.search-container {
+    position: relative;
+}
+
+.search-results-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    z-index: 1000;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.search-result-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.search-result-item:hover {
+    background-color: #f5f5f5;
+}
+
+.search-result-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.search-result-info {
+    flex: 1;
+}
+
+.search-result-name {
+    font-weight: bold;
+}
+
+.search-result-email {
+    font-size: 0.8em;
+    color: #666;
 }
 
 .button {
