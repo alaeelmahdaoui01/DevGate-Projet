@@ -3,11 +3,9 @@
         <nav class="navbar">
             <div class="buttons-container">
                 <router-link :to="'/dashboard/' + user.uid" class="button">Dashboard</router-link>
-                <router-link to="/#" class="button">Skills Tracker</router-link>
-                <router-link to="/projects" class="button">Projects</router-link>
-                <router-link to="/#" class="button">Objectives</router-link>
+                <router-link :to="'/projects/' + user.uid" class="button">Projects</router-link>
+                <router-link :to="'/objectives/' + user.uid" class="button">Objectives</router-link>
                 <router-link to="/#" class="button">Timeline</router-link>
-                <router-link to="/#" class="button">Stats</router-link>
             </div>
 
             <div class="search-container">
@@ -28,10 +26,10 @@
 
 
             <div class="usermenu">
-                <router-link :to="'/profile/' + user.uid" class="username">
+                <!--router-link :to="'/profile/' + user.uid" class="username">
                     <img :src="URLimg" class="userphoto">
                 </router-link>
-                <router-link :to="'/profile/' + user.uid" class="username"></router-link>
+                <router-link :to="'/profile/' + user.uid" class="username"></router-link-->
                 <button class="button" @click="leave">Sign out</button>
             </div>
         </nav>

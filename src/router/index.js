@@ -4,6 +4,7 @@ import LoginView from '../views/LoginView.vue'
 import ProjectsView from '../views/ProjectsView.vue'
 import DashboardView from '@/views/DashboardView.vue'
 import EditProfile from '@/views/EditProfile.vue'
+import ObjectivesView from '../views/ObjectivesView.vue'
 
 const routes = [{
         path: '/',
@@ -21,9 +22,16 @@ const routes = [{
         component: EditProfile
     },
     {
-        path: '/projects',
+        path: '/projects/:id',
         name: 'projects',
-        component: ProjectsView
+        component: ProjectsView,
+        props: true,
+    },
+    {
+        path: '/objectives/:id',
+        name: 'objectives',
+        component: ObjectivesView,
+        props: true
     },
     {
         path: '/dashboard/:userId',

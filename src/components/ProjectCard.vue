@@ -7,7 +7,6 @@
         class="project-image"
       />
       
-      <!-- Action buttons overlay - moved to top -->
       <div class="action-buttons">
         <a 
           v-if="project.githubLink"
@@ -35,7 +34,7 @@
       </div>
     </div>
     
-    <!-- Project info overlay -->
+
     <div class="project-info">
       <h3 class="project-title">{{ project.title }}</h3>
       <a 
@@ -77,7 +76,7 @@ export default {
 <style scoped>
 .project-card {
   width: 100%;
-  aspect-ratio: 1/1; /* Makes card square */
+  aspect-ratio: 1/1;
   position: relative;
   border-radius: 0.75rem;
   overflow: hidden;
