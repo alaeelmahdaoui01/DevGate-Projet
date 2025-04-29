@@ -132,39 +132,50 @@
         this.showEditModal = false
       },
       async fetchObjectives() {
-        this.isLoading = true
-        await waitForAuthInit()
-        const user = getUser()
-  
-        if (!user) {
-          console.warn('User not logged in')
-          this.isLoading = false
-          return
-        }
-  
-        const userDocRef = doc(db, 'users', user.uid)
-        const userDocSnap = await getDoc(userDocRef)
-  
-        if (userDocSnap.exists()) {
-          const userData = userDocSnap.data()
-          const userObjectives = userData.objectives || []
-          const fetchedObjectives = []
-  
-          for (const obj of userObjectives) {
-            const objDoc = await getDoc(doc(db, 'objectives', obj.id))
-            if (objDoc.exists()) {
-                fetchedObjectives.push({ id: obj.id, ...objDoc.data() })
+            this.isLoading = true;
+            try {
+                const userDocRef = doc(db, 'users', this.id);
+                const userDocSnap = await getDoc(userDocRef);
+
+                if (userDocSnap.exists()) {
+                    const userData = userDocSnap.data();
+                    const userObjectives = userData.objectives || [];
+                    const fetchedObjectives = [];
+
+                    for (const obj of userObjectives) {
+                        const objDoc = await getDoc(doc(db, 'objectives', obj.id));
+                        if (objDoc.exists()) {
+                            fetchedObjectives.push({ id: obj.id, ...objDoc.data() });
+                        }
+                    }
+
+                    this.objectives = fetchedObjectives;
+                }
+            } catch (error) {
+                console.error("Error fetching objectives:", error);
             }
-          }
-        
-          this.objectives = fetchedObjectives
+            this.isLoading = false;
         }
-        this.isLoading = false
-      },
     },
-    mounted() {
-      this.fetchObjectives()
+    //mounted() {
+     // this.fetchObjectives()
+    // },
+
+
+    props: {
+        id: {
+            type: String,
+            required: true
+        }
     },
+    watch: {
+        id: {
+            immediate: true,
+            handler() {
+                this.fetchObjectives();
+            }
+        }
+    }
   }
   </script>
   
