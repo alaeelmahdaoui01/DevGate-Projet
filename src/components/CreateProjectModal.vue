@@ -103,76 +103,71 @@ export default {
     },
 
     async createProject() {
-      this.message = ""
+  this.message = "";
 
-      try {
-        const user = getUser()
-        if (!user) {
-          this.message = "You must be logged in."
-          return
-        }
-
-        const userRef = doc(db, "users", user.uid)
-
-
-        let imageUrl = ""
-          
-
-          const project = {
-          title: this.title || "Untitled Project",
-          description: this.description,
-          stack: this.stackInput.split(',').map(s => s.trim()),
-          githubLink: this.githubLink,
-          email: user.email,
-          createdBy: user.uid,
-          createdAt: serverTimestamp(),
-          image: this.imageBase64 // ← store image directly as Base64
-          }
-
-        if (this.selectedProject) {
-          // Update existing project
-          await updateDoc(doc(db, "projects", this.selectedProject.id), project)
-          this.message = "Project updated successfully!"
-        } else {
-          // Create new project
-
-          
-
-          const projectRef = await addDoc(collection(db, "projects"), project)
-          await updateDoc(userRef, {
-            projects: arrayUnion({
-              id: projectRef.id,
-              title: project.title,
-              stack: project.stack,
-              githubLink: project.githubLink,
-              //createdAt: serverTimestamp(),
-              imageUrl,
-            })
-          })
-          this.message = "Project created successfully!"
-        }
-
-        this.$emit('saved')
-        this.$emit('close')
-      } catch (err) {
-        console.error(err)
-        this.message = "Error: " + err.message
-      }
-    },
-    handleFileChange(event) {
-      const file = event.target.files[0]
-      const reader = new FileReader()
-
-      reader.onload = () => {
-          this.imageBase64 = reader.result // This is the Base64 string
-      }
-
-      if (file) {
-          reader.readAsDataURL(file)
-      }
+  try {
+    const user = getUser();
+    if (!user) {
+      this.message = "You must be logged in.";
+      return;
     }
+
+    const userRef = doc(db, "users", user.uid);
+
+    // Handle image file if present
+    let imageUrl = "";
+    if (this.imageFile) {
+      // Handle image upload to Firebase Storage here if needed
+      // For now assuming image is stored as Base64
+      imageUrl = this.imageBase64;
+    }
+
+    const project = {
+      title: this.title || "Untitled Project",
+      description: this.description,
+      stack: this.stackInput.split(',').map(s => s.trim()),
+      githubLink: this.githubLink,
+      email: user.email,
+      createdBy: user.uid,
+      createdAt: serverTimestamp(),
+      image: imageUrl // Use the Base64 image or URL from Firebase Storage
+    };
+
+    
+      // --- Create new project
+      const projectRef = await addDoc(collection(db, "projects"), project);
+
+      // Update user with new project
+      await updateDoc(userRef, {
+        projects: arrayUnion({
+          id: projectRef.id,
+          title: project.title,
+          stack: project.stack,
+          githubLink: project.githubLink,
+          imageUrl,
+        })
+      });
+
+      // ✨ Add to timeline when new project is created
+      await addDoc(collection(db, "timeline"), {
+        userId: user.uid,
+        type: "Created Project", // Type indicates new project creation
+        title: project.title,
+        description: project.description,
+        date: serverTimestamp(), // Use serverTimestamp for consistency
+      });
+
+      this.message = "Project created successfully!";
+
+    this.$emit('saved');
+    this.$emit('close');
+  } catch (err) {
+    console.error(err);
+    this.message = "Error: " + err.message;
   }
 }
+}}
+
 </script>
 
 <style scoped>

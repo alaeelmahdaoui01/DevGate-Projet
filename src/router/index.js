@@ -3,6 +3,9 @@ import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
 import ProjectsView from '../views/ProjectsView.vue'
 import ObjectivesView from '../views/ObjectivesView.vue'
+import TimelineView from '../views/TimelineView.vue'
+import DashboardView from '../views/DashboardView.vue'
+import EditProfile from '@/views/EditProfile.vue'
 
 const routes = [{
         path: '/',
@@ -26,7 +29,23 @@ const routes = [{
         name: 'objectives',
         component: ObjectivesView,
         props: true
-    }
+    },
+    {
+        path: '/timeline',
+        name: 'timeline',
+        component: TimelineView
+    },
+    {
+        path: '/dashboard/:userId',
+        name: 'dashboard',
+        component: DashboardView,
+        props: true
+    },
+    {
+        path: '/editprofile/:id',
+        name: 'editprofile',
+        component: EditProfile
+    },
 ]
 
 const router = createRouter({
