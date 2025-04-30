@@ -5,6 +5,7 @@ import ProjectsView from '../views/ProjectsView.vue'
 import DashboardView from '@/views/DashboardView.vue'
 import EditProfile from '@/views/EditProfile.vue'
 import ObjectivesView from '../views/ObjectivesView.vue'
+import TimelineView from '@/views/TimelineView.vue'
 
 const routes = [{
         path: '/',
@@ -38,6 +39,11 @@ const routes = [{
         name: 'dashboard',
         component: DashboardView,
         props: true
+    },
+    {
+        path: '/timeline',
+        name: 'timeline',
+        component: TimelineView
     }
 ]
 

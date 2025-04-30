@@ -134,10 +134,8 @@ export default {
           this.message = "Project updated successfully!"
         } else {
           // Create new project
-
-          
-
           const projectRef = await addDoc(collection(db, "projects"), project)
+          
           await updateDoc(userRef, {
             projects: arrayUnion({
               id: projectRef.id,
@@ -148,6 +146,13 @@ export default {
               imageUrl,
             })
           })
+          await addDoc(collection(db, "timeline"), {
+            userId: user.uid,
+            type: "Created Project", // Type indicates new project creation
+            title: project.title,
+            description: project.description,
+            date: serverTimestamp(), // Use serverTimestamp for consistency
+          });
           this.message = "Project created successfully!"
         }
 

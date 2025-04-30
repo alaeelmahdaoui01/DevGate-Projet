@@ -9,11 +9,12 @@
           class="profile-avatar"
         />
         <h2 class="profile-name">{{ userProfile?.displayName || 'Loading...' }}</h2>
-        <p class="profile-bio">{{ userProfile?.status || 'Loading...' }}</p>
+        <p class="profile-bio" v-if="userProfile?.status">{{ userProfile?.status }}</p>
         <ul class="profile-details">
-          <li><strong>Repositories:</strong> {{ projects.length }}</li>
-          <li><strong>Location:</strong> {{ userProfile?.location || 'Loading...' }}</li>
-          <li><strong>LinkedIn:</strong> 
+          <li v-if="userProfile?.email"><strong>Email: </strong> {{ userProfile.email }}</li>
+          <li><strong>Repositories: </strong> {{ projects.length }}</li>
+          <li v-if="userProfile?.location"><strong>Location: </strong> {{ userProfile.location }}</li>
+          <li v-if="userProfile?.linkedin"><strong>LinkedIn: </strong> 
             <a v-if="userProfile?.linkedin" :href="userProfile.linkedin" target="_blank">{{ userProfile.linkedin }}</a>
           </li>
         </ul>
@@ -75,6 +76,17 @@
             <p class="objective-description">{{ objective.description }}</p>
             <p class="objective-status">Status: {{ objective.status }}</p>
             <p class="objective-progress">Progress: {{ objective.progress }}%</p>
+            <div class="progress-bar">
+              <div
+                class="progress-fill"
+                :style="{ width: objective.progress + '%' }"
+                :class="{
+                  'bg-blue-500': objective.progress < 50,
+                  'bg-green-500': objective.progress >= 50 && objective.progress < 80,
+                  'bg-purple-500': objective.progress >= 80
+                }"
+              ></div>
+            </div>
           </div>
         </div>
       </div>
@@ -87,6 +99,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/Firebase/config';
 import { waitForAuthInit, getUser } from '@/Firebase/Authentification/getUser';
 
+
 export default {
   name: 'DashboardView',
   props: {
@@ -98,8 +111,12 @@ export default {
   data() {
     return {
       projects: [],
-      userProfile: null, // Data for the user specified by `userId`
-      currentUser: null, // Data for the currently logged-in user
+      objectives: [],
+      userProfile: null,
+      currentUser: null,
+      showAddObjectiveModal: false,
+      showEditObjectiveModal: false,
+      selectedObjective: null,
     };
   },
   computed: {
@@ -127,6 +144,18 @@ export default {
             }
           }
           this.projects = fetchedProjects;
+
+          // Fetch objectives
+          const userObjectives = userData.objectives || [];
+          const fetchedObjectives = [];
+          for (const obj of userObjectives) {
+            const objDoc = await getDoc(doc(db, 'objectives', obj.id));
+            if (objDoc.exists()) {
+              fetchedObjectives.push({ id: obj.id, ...objDoc.data() });
+            }
+          }
+          this.objectives = fetchedObjectives;
+
         } else {
           console.warn('User document not found in Firestore');
         }
@@ -134,6 +163,7 @@ export default {
         console.error('Error fetching user profile or projects:', error);
       }
     },
+
     async fetchCurrentUser() {
       await waitForAuthInit();
       const user = getUser();
@@ -141,6 +171,7 @@ export default {
         this.currentUser = user;
       }
     },
+
     editProfile() {
       this.$router.push(`/editprofile/${this.userId}`);
     },
@@ -279,5 +310,67 @@ export default {
 .edit-profile-btn:hover {
   background-color: #2563eb;
 }
+
+.objective-item {
+    background: rgba(255, 255, 255, 0.98);
+    border: 1px solid rgba(203, 213, 225, 0.25);
+    padding: 1.25rem;
+    border-radius: 0.75rem;
+    margin-bottom: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  .objective-content {
+    flex: 1;
+  }
+
+  .objective-title {
+    font-weight: 600;
+    color: #1e40af;
+    font-size: 1.125rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .objective-description {
+    color: #4b5563;
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+  }
+
+  .objective-status,
+  .objective-progress {
+    font-size: 0.875rem;
+    color: #6b7280;
+  }
+
+  .progress-bar {
+    background: #e5e7eb;
+    height: 0.5rem;
+    border-radius: 0.375rem;
+    overflow: hidden;
+    margin-top: 0.5rem;
+  }
+
+  .progress-fill {
+    height: 100%;
+    transition: width 0.3s ease-in-out;
+  }
+
+  .progress-fill.bg-blue-500 {
+    background-color: #3b82f6;
+  }
+
+  .progress-fill.bg-green-500 {
+    background-color: #10b981;
+  }
+
+  .progress-fill.bg-purple-500 {
+    background-color: #8b5cf6;
+  }
+
+
   </style>
   

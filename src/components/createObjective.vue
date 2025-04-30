@@ -129,6 +129,13 @@
                 progress: objective.progress,
               })
             })
+            await addDoc(collection(db, "timeline"), {
+              userId: user.uid,
+              type: "added objective",
+              title: objective.title,
+              description: "Created a new objective.",
+              date: serverTimestamp()
+            })
             this.message = "Objective created successfully!"
           }
   
