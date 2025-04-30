@@ -5,7 +5,7 @@
               <router-link :to="'/dashboard/' + user.uid" class="button">Dashboard</router-link>
               <router-link :to="'/projects/' + user.uid" class="button">Projects</router-link>
               <router-link :to="'/objectives/' + user.uid" class="button">Objectives</router-link>
-              <router-link to="/#" class="button">Timeline</router-link>
+              <router-link to="/timeline" class="button">Timeline</router-link>
           </div>
 
           <div class="search-container">
@@ -114,7 +114,7 @@ async searchUsers() {
         goToUserProfile(userId) {
             this.searchQuery = '';
             this.searchResults = [];
-            this.$router.push(`/projects/${userId}`);
+            this.$router.push(`/dashboard/${userId}`);
         }
     },
     created() {

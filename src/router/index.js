@@ -36,7 +36,7 @@ const routes = [{
         component: TimelineView
     },
     {
-        path: '/dashboard/:userId',
+        path: '/dashboard/:id',
         name: 'dashboard',
         component: DashboardView,
         props: true
@@ -45,7 +45,7 @@ const routes = [{
         path: '/editprofile/:id',
         name: 'editprofile',
         component: EditProfile
-    },
+    }
 ]
 
 const router = createRouter({
