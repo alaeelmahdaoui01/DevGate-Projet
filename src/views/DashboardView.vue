@@ -116,9 +116,18 @@
                 </div>
               </div>
             </div>
+           
           </div>
         </div>
+      <div class="visualization-section">
+        <h1 class="visualization-title">Visualization</h1>
+        <div class="visualization-content">
+          <ProjectsPerDay />
+          <ProgressOverTime />
+        </div>
+      </div>
       </main>
+
     </div>
 </template>
 
@@ -128,9 +137,14 @@
   import { doc, getDoc } from 'firebase/firestore';
   import { db } from '@/Firebase/config';
   import { waitForAuthInit, getUser } from '@/Firebase/Authentification/getUser';
-  
+  import ProjectsPerDay from '@/components/ProjectPerMonth.vue'
+
+  import ProgressOverTime from '@/components/ProgressOverTime.vue'
+
   export default {
     name: 'DashboardView',
+    components: { ProjectsPerDay, ProgressOverTime },
+
     props: {
       id: {  // Changé de userId à id pour correspondre à objectivesView.vue
         type: String,
@@ -225,6 +239,7 @@
 
   
   <style scoped>
+  
   .dashboard-container {
     display: flex;
     min-height: 100vh;
@@ -719,5 +734,6 @@
     width: 40px;
     height: 40px;
   }
+  
 }
   </style>

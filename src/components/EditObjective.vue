@@ -51,6 +51,7 @@ import { db } from '@/Firebase/config'
 import {  addDoc, collection, serverTimestamp } from 'firebase/firestore'
 import { getUser, waitForAuthInit } from '@/Firebase/Authentification/getUser'
 
+
 export default {
 name: "EditObjModal",
 props: {
