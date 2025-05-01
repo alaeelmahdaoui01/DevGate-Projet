@@ -83,7 +83,7 @@
 <script>
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '@/Firebase/config'
-import { waitForAuthInit, getUser } from '@/Firebase/Authentification/getUser'
+//import { waitForAuthInit, getUser } from '@/Firebase/Authentification/getUser'
 
 import ProjectCard from '@/components/ProjectCard.vue'
 import ProjectModal from '@/components/CreateProjectModal.vue'
