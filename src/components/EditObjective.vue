@@ -285,7 +285,7 @@ to {
 }
 
 .slider {
--webkit-appearance: none;
+appearance: none;
 width: 100%;
 height: 6px;
 background: #e2e8f0;

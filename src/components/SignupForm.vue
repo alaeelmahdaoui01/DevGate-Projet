@@ -24,6 +24,8 @@ export default {
       password: "",
       error: "",
       iserror: false ,
+      defaultAvatar: 'https://www.shutterstock.com/image-vector/default-avatar-profile-icon-vector-600nw-1745180411.jpg'
+
     };
   },
   methods: {
@@ -33,6 +35,7 @@ export default {
         const user = userCredential.user;
         this.error = "";
         this.iserror = false;
+        let photoURL = this.defaultAvatar;
 
         const userDocRef = doc(db, "users", user.uid);
 
@@ -43,10 +46,11 @@ export default {
           projects: [],
           certificates: [],
           objectives: [],
-          competences: []
+          competences: [],
+          photoURL: photoURL,
         });
 
-        this.$router.push("/dashboard");
+        this.$router.push("/dashboard/" + user.uid);
       } catch (err) {
         this.error = err.message;
         this.iserror = true;
@@ -77,7 +81,7 @@ export default {
           });
         }
 
-        this.$router.push("/dashboard");
+        this.$router.push("/dashboard/" + user.uid);
       } catch (err) {
         this.iserror=true ; 
         this.error = err.message;

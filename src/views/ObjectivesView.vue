@@ -31,9 +31,9 @@
                         class="progress-fill" 
                         :style="{ width: objective.progress + '%' }"
                         :class="{
-                            'bg-blue-500': objective.progress < 50,
-                            'bg-green-500': objective.progress >= 50 && objective.progress < 80,
-                            'bg-purple-500': objective.progress >= 80
+                            'bg-blue-500': objective.progress < 30,
+                            'bg-green-500': objective.progress >= 30 && objective.progress < 70,
+                            'bg-purple-500': objective.progress >= 70
                         }"
                         ></div>
                     </div>
@@ -71,7 +71,7 @@
   <script>
   import { doc, getDoc } from 'firebase/firestore'
   import { db } from '@/Firebase/config'
-  // import { waitForAuthInit, getUser } from '@/Firebase/Authentification/getUser'
+  //import { waitForAuthInit, getUser } from '@/Firebase/Authentification/getUser'
   
   import CreateObjectiveModal from '@/components/createObjective.vue';
   import EditObjectiveModal from '@/components/EditObjective.vue' ; 
@@ -492,16 +492,16 @@
 }
 
 /* Color classes for progress (already defined in template) */
-.bg-blue-500 {
-  background-color: #3b82f6;
+.bg-blue-500 {   /*red*/
+  background-color: #ef4444;
 }
 
-.bg-green-500 {
+.bg-green-500 {   /* orange */
+  background-color: #f59e0b;
+}
+
+.bg-purple-500 {  /* green  */
   background-color: #10b981;
-}
-
-.bg-purple-500 {
-  background-color: #8b5cf6;
 }
 
 /* Enhanced project item styling */

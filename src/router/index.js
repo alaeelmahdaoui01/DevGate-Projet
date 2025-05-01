@@ -35,15 +35,20 @@ const routes = [{
         props: true
     },
     {
-        path: '/dashboard/:userId',
+        path: '/timeline',
+        name: 'timeline',
+        component: TimelineView
+    },
+    {
+        path: '/dashboard/:id',
         name: 'dashboard',
         component: DashboardView,
         props: true
     },
     {
-        path: '/timeline',
-        name: 'timeline',
-        component: TimelineView
+        path: '/editprofile/:id',
+        name: 'editprofile',
+        component: EditProfile
     }
 ]
 

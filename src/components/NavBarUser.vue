@@ -75,55 +75,47 @@ export default {
             this.$router.push('/');
         },
 
-      async searchUsers() {
-        clearTimeout(this.searchTimeout);
 
-        if (!this.searchQuery) {
-          this.searchResults = [];
-          return;
-        }
+async searchUsers() {
+  clearTimeout(this.searchTimeout);
 
-        this.searchTimeout = setTimeout(async () => {
-          try {
-            const usersRef = collection(db, 'users');
-            const q = query(
-              usersRef,
-              orderBy('displayName'),
-              startAt(this.searchQuery),
-              endAt(this.searchQuery + '\uf8ff')
-            );
+  if (!this.searchQuery) {
+    this.searchResults = [];
+    return;
+  }
 
-            const querySnapshot = await getDocs(q);
-            this.searchResults = querySnapshot.docs.map(doc => ({
-              id: doc.id,
-              ...doc.data()
-            }));
-          } catch (error) {
-            console.error("Error searching users:", error);
-            this.searchResults = [];
-          }
-        }, 300);
-        },
+  this.searchTimeout = setTimeout(async () => {
+    try {
+      const usersRef = collection(db, 'users');
+      const q = query(
+        usersRef,
+        orderBy('displayName'),
+        startAt(this.searchQuery),
+        endAt(this.searchQuery + '\uf8ff')
+      );
+
+      const querySnapshot = await getDocs(q);
+      this.searchResults = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+    } catch (error) {
+      console.error("Error searching users:", error);
+      this.searchResults = [];
+    }
+  }, 300);
+}
+,
         performSearch() {
             if (this.searchResults.length > 0) {
                 this.goToUserProfile(this.searchResults[0].id);
             }
         },
-        // goToUserProfile(userId) {
-        //     this.searchQuery = '';
-        //     this.searchResults = [];
-        //     this.$router.push(`/dashboard/${userId}`);
-        // }
         goToUserProfile(userId) {
-          this.searchQuery = '';
-          this.searchResults = [];
-          const path = `/dashboard/${userId}`;
-          this.$router.push(path).then(() => {
-              // Force the page to reload after navigating to the new path
-              window.location.reload();
-          });
+            this.searchQuery = '';
+            this.searchResults = [];
+            this.$router.push(`/dashboard/${userId}`);
         }
-
     },
     created() {
         // Pour fermer les résultats de recherche quand on clique ailleurs

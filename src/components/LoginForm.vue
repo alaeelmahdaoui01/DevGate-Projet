@@ -39,7 +39,7 @@ export default {
         if (userDoc.exists()) {
 
           // You can check role and redirect accordingly if needed
-          this.$router.push("/dashboard");
+          this.$router.push("/dashboard/" + user.uid);
         } else {
           this.iserror=true ; 
           this.error = "User data not found.";
@@ -71,7 +71,7 @@ export default {
             });
         }
 
-        this.$router.push("/dashboard");
+        this.$router.push("/dashboard/" + user.uid);
         } catch (err) {
           this.iserror = true ; 
         this.error = err.message;

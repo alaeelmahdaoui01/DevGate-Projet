@@ -1,182 +1,168 @@
 <template>
-    <div class="profile-edit-container">
-      <h1 class="text-xl font-bold mb-4">Edit Profile</h1>
-      <form @submit.prevent="updateProfile" class="profile-edit-form">
-        <!-- Display Name -->
-        <div class="form-group">
-          <label for="displayName">Display Name</label>
-          <input
-            v-model="updatedName"
-            id="displayName"
-            type="text"
-            placeholder="Enter display name"
-          />
-        </div>
-  
-        <!-- Email -->
-        <div class="form-group">
-          <label for="email">Email</label>
-          <input
-            v-model="updatedEmail"
-            id="email"
-            type="email"
-            placeholder="Enter email"
-          />
-        </div>
-  
-        <!-- Location -->
-        <div class="form-group">
-          <label for="location">Location</label>
-          <input
-            v-model="updatedLocation"
-            id="location"
-            type="text"
-            placeholder="Enter location"
-          />
-        </div>
-  
-        <!-- Status -->
-        <div class="form-group">
-          <label for="status">Status</label>
-          <input id="status" type="text" v-model="updatedStatus">
-        </div>
+  <div class="profile-edit-container">
+    <h1 class="text-xl font-bold mb-4">Edit Profile</h1>
+    <form @submit.prevent="updateProfile" class="profile-edit-form">
+      <!-- Display Name -->
+      <div class="form-group">
+        <label for="displayName">Display Name</label>
+        <input
+          v-model="updatedName"
+          id="displayName"
+          type="text"
+          placeholder="Enter display name"
+        />
+      </div>
 
-        <div class="form-group">
-          <label for="linkedin">LinkedIn</label>
-          <input id="linkedin" type="text" v-model="updatedLinkedin">
-        </div>
+      <!-- Email -->
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input
+          v-model="updatedEmail"
+          id="email"
+          type="email"
+          placeholder="Enter email"
+        />
+      </div>
 
-        
-        <div class="form-group">
-            <label for="photoURL">Profile Picture</label>
-            <div class="photo-upload">
-                <img :src="updatedPhotoBase64 || 'https://www.shutterstock.com/image-vector/default-avatar-profile-icon-vector-600nw-1745180411.jpg'" alt="Profile" class="photo-preview"/>
+      <!-- Location -->
+      <div class="form-group">
+        <label for="location">Location</label>
+        <input
+          v-model="updatedLocation"
+          id="location"
+          type="text"
+          placeholder="Enter location"
+        />
+      </div>
+
+      <!-- Status -->
+      <div class="form-group">
+        <label for="status">Status</label>
+        <input id="status" type="text" v-model="updatedStatus">
+      </div>
+
+      <div class="form-group">
+        <label for="linkedin">LinkedIn</label>
+        <input id="linkedin" type="text" v-model="updatedLinkedin">
+      </div>
+
+      
+      <div class="form-group">
+          <label for="photoURL">Profile Picture</label>
+          <div class="photo-upload">
+              <img :src="updatedPhotoBase64 || defaultAvatar" alt="Profile" class="photo-preview"/>
+              <div class="photo-actions">
                 <label for="photoInput" class="upload-icon">+</label>
+                <button 
+                  v-if="updatedPhotoBase64 && updatedPhotoBase64 !== defaultAvatar" 
+                  @click.prevent="removePhoto" 
+                  class="remove-icon"
+                >
+                  ×
+                </button>
                 <input id="photoInput" type="file" accept="image/*" @change="handlePhotoUpload" class="hidden"/>
-            </div>
-        </div>
+              </div>
+          </div>
+      </div>
 
-        <!-- Submit Button -->
-        <button type="submit" class="submit-btn">Update Profile</button>
-      </form>
-    </div>
-  </template>
+      <!-- Submit Button -->
+      <button type="submit" class="submit-btn">Update Profile</button>
+      <button 
+        type="button" 
+        @click="cancelEdit" 
+        class="cancel-btn"
+      >
+        Cancel
+      </button>
+    </form>
+  </div>
+</template>
 
 
 <script>
 import { getDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/Firebase/config';
-// import { getAuth, updateEmail } from "firebase/auth";
-
 
 export default {
-  name: 'EditProfile',
-  data() {
-    return {
-      user: null, // Holds the current user data
-      updatedName: '',
-      updatedEmail: '',
-      updatedLocation: '',
-      updatedStatus: '',
-      updatedLinkedin: '',
-      updatedPhotoBase64: '', // Base64 image string
-    };
-  },
-  methods: {
-    async fetchUserProfile() {
-      try {
-        const userId = this.$route.params.id; // Retrieve userId from route
-        const userDocRef = doc(db, 'users', userId);
-        const userDoc = await getDoc(userDocRef);
+name: 'EditProfile',
+data() {
+  return {
+    user: null,
+    updatedName: '',
+    updatedEmail: '',
+    updatedLocation: '',
+    updatedStatus: '',
+    updatedLinkedin: '',
+    updatedPhotoBase64: '',
+    defaultAvatar: 'https://www.shutterstock.com/image-vector/default-avatar-profile-icon-vector-600nw-1745180411.jpg',
+    originalPhoto: ''
+  };
+},
+methods: {
+  async fetchUserProfile() {
+    try {
+      const userId = this.$route.params.id;
+      const userDocRef = doc(db, 'users', userId);
+      const userDoc = await getDoc(userDocRef);
 
-        if (userDoc.exists()) {
-          this.user = userDoc.data();
-          this.updatedName = this.user.displayName || '';
-          this.updatedEmail = this.user.email || '';
-          this.updatedLocation = this.user.location || '';
-          this.updatedStatus = this.user.status || '';
-          this.updatedLinkedin = this.user.linkedin || '';
-          this.updatedPhotoBase64 = this.user.photoURL || '';
-        } else {
-          console.warn('User document not found');
-        }
-      } catch (error) {
-        console.error('Error fetching user profile:', error.message);
+      if (userDoc.exists()) {
+        this.user = userDoc.data();
+        this.updatedName = this.user.displayName || '';
+        this.updatedEmail = this.user.email || '';
+        this.updatedLocation = this.user.location || '';
+        this.updatedStatus = this.user.status || '';
+        this.updatedLinkedin = this.user.linkedin || '';
+        this.updatedPhotoBase64 = this.user.photoURL || this.defaultAvatar;
+        this.originalPhoto = this.user.photoURL || this.defaultAvatar;
       }
-    },
+    } catch (error) {
+      console.error('Error fetching user profile:', error.message);
+    }
+  },
 
-    async handlePhotoUpload(event) {
-      const file = event.target.files[0];
-      if (!file) return;
+  handlePhotoUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
 
-      const reader = new FileReader();
-      reader.onload = () => {
-        this.updatedPhotoBase64 = reader.result; // Save Base64 string
-      };
-      reader.readAsDataURL(file);
-    },
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.updatedPhotoBase64 = reader.result;
+    };
+    reader.readAsDataURL(file);
+  },
 
-    async updateProfile() {
-        try {
-        const userId = this.$route.params.id;
-        const userDocRef = doc(db, 'users', userId);
+  removePhoto() {
+    this.updatedPhotoBase64 = this.defaultAvatar;
+  },
 
-        // Update Firestore with new profile data
-        await updateDoc(userDocRef, {
-            displayName: this.updatedName,
-            email: this.updatedEmail,
-            location: this.updatedLocation,
-            status: this.updatedStatus,
-            linkedin: this.updatedLinkedin,
-            photoURL: this.updatedPhotoBase64, // Save the Base64 string
-    });
-        // const auth = getAuth();
-        // const user = auth.currentUser;
+  cancelEdit() {
+    this.$router.push(`/dashboard/${this.$route.params.id}`);
+  },
 
-        // if (user) {
-        //     await updateEmail(user, this.updatedEmail);
-        // } else {
-        // throw new Error("User is not authenticated");
-        // }
-      alert('Profile updated successfully!');
-      this.$router.push(`/profile/${userId}`);
+  async updateProfile() {
+    try {
+      const userId = this.$route.params.id;
+      const userDocRef = doc(db, 'users', userId);
+
+      await updateDoc(userDocRef, {
+        displayName: this.updatedName,
+        email: this.updatedEmail,
+        location: this.updatedLocation,
+        status: this.updatedStatus,
+        linkedin: this.updatedLinkedin,
+        photoURL: this.updatedPhotoBase64 === this.defaultAvatar ? '' : this.updatedPhotoBase64,
+      });
+
+      this.$router.push(`/dashboard/${userId}`);
     } catch (error) {
       console.error('Error updating profile:', error.message);
       alert('Failed to update profile. Please try again.');
     }
   }
-    // async updateProfile() {
-    //   try {
-    //     const userId = this.$route.params.id; // Assumes route param contains the userId
-    //     const userDocRef = doc(db, 'users', userId);
-
-    //     // Update Firestore with new profile data
-    //     await updateDoc(userDocRef, {
-    //       displayName: this.updatedName,
-    //       email: this.updatedEmail,
-    //       location: this.updatedLocation,
-    //       status: this.updatedStatus,
-    //       linkedin: this.updatedLinkedin,
-    //     });
-
-    //     // Update local state
-    //     this.user.displayName = this.updatedName;
-    //     this.user.email = this.updatedEmail;
-    //     this.user.location = this.updatedLocation;
-    //     this.user.status = this.updatedStatus;
-    //     this.user.linkedin = this.updatedLinkedin;
-
-    //     alert('Profile updated successfully!');
-    //     this.$router.push(`/profile/${userId}`);
-    //   } catch (error) {
-    //     console.error('Error updating profile:', error.message);
-    //     alert('Failed to update profile. Please try again.');
-    //   }
-    // },
-  },
-  mounted() {
-    this.fetchUserProfile();
-  },
+},
+mounted() {
+  this.fetchUserProfile();
+},
 };
 </script>
 
@@ -267,5 +253,4 @@ select:focus {
 .hidden {
   display: none;
 }
-
 </style>
