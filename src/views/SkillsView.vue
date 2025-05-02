@@ -1,199 +1,177 @@
 <template>
     <div class="p-6">
       <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold">My Objectives</h1>
-        <button v-if="id === currentUserId" @click="openAddModal" class="btn-primary">+ Add Objective</button>
+        <h1 class="text-2xl font-bold">My Skills</h1>
+        <button @click="openAddModal" class="btn-primary">+ Add Skill</button>
       </div>
+  
+      <div v-if="!isLoading && skills.length === 0" class="text-center text-gray-500 mt-8">
+        No skills found. Click "+ Add Skill" to add one!
+      </div>
+      <div v-else>
+        <div
+          v-for="skill in skills"
+          :key="skill.id"
+          class="project-item"
+        >
+          <div class="project-content">
+            <h3 class="project-title">{{ skill.name }}</h3>
+            <p class="project-description">{{ skill.description }}</p>
+            <div class="project-meta">
+              <div v-if="skill.level" class="progress-container">
+                <div class="progress-label">{{ skill.level }} ({{ getPercentage(skill.level) }}%)</div>
+                <div class="progress-bar">
+                    <div
+                    class="progress-fill"
+                    :style="{ width: getPercentage(skill.level) + '%' }"
+                    :class="{
+                        'bg-blue-500': getPercentage(skill.level) <= 33,
+                        'bg-green-500': getPercentage(skill.level) > 33 && getPercentage(skill.level) <= 66,
+                        'bg-purple-500': getPercentage(skill.level) > 66
+                    }"
+                    ></div>
+                </div>
+               </div>
 
-      <div v-if="!isLoading && objectives.length === 0" class="text-center text-gray-500 mt-8">
-        No objectives found. Click "+ Add Objective" to create one!
+            </div>
+          </div>
+          <div class="project-actions">
+            <button class="btn-sm" @click="editSkill(skill)">Edit</button>
+            <button @click="deleteSkill(skill.id)" class="action-btn delete-btn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 6h18"></path>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+            </button>
+          </div>
         </div>
-        <div v-else>
-            <div
-                v-for="objective in objectives"
-                :key="objective.id"
-                class="project-item"
-            >
-                <div class="project-content">
-                <h3 class="project-title">{{ objective.title }}</h3>
-                <p class="project-description">{{ objective.description }}</p>
-                <div class="project-meta">
-                    <p class="project-stack">
-                    Status: <span class="status-badge" :class="'status-' + objective.status.toLowerCase().replace(' ', '-')">
-                        {{ objective.status }}
-                    </span>
-                    </p>
-                    <!-- Progress bar container -->
-                    <div v-if="objective.progress" class="progress-container">
-                    <div class="progress-label">{{ objective.progress }}%</div>
-                    <div class="progress-bar">
-                        <div 
-                        class="progress-fill" 
-                        :style="{ width: objective.progress + '%' }"
-                        :class="{
-                            'bg-blue-500': objective.progress < 30,
-                            'bg-green-500': objective.progress >= 30 && objective.progress < 70,
-                            'bg-purple-500': objective.progress >= 70
-                        }"
-                        ></div>
-                    </div>
-                    </div>
-                </div>
-                </div>
-                <div class="project-actions">
-                <button v-if="id === this.currentUserId" class="btn-sm" @click="editObjective(objective)">Track progress</button>
-                <button v-if="id === this.currentUserId" @click="deleteObjective(objective.id)" class="action-btn delete-btn">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M3 6h18"></path>
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                    </svg>
-                </button>
-                </div>
-            </div>
-            </div>
+      </div>
   
       <div v-if="showModal" class="modal-overlay">
-        <CreateObjectiveModal @close="closeModal" @saved="onObjectiveSaved" />
+        <CreateSkillModal @close="closeModal" @saved="onSkillSaved" />
       </div>
   
       <div v-if="showEditModal" class="modal-overlay">
-        <EditObjectiveModal 
-          :selectedObjective="selectedObjective"
+        <EditSkillModal 
+          :selectedSkill="selectedSkill"
           @close="closeModal"
-          @saved="onObjectiveSaved"
+          @saved="onSkillSaved"
         />
       </div>
+  
       <div v-if="isLoading">Loading...</div>
     </div>
-
   </template>
   
   <script>
-  import { doc, getDoc } from 'firebase/firestore'
-  import { db } from '@/Firebase/config'
-  import { getAuth } from 'firebase/auth';
-
-  import CreateObjectiveModal from '@/components/createObjective.vue';
-  import EditObjectiveModal from '@/components/EditObjective.vue' ; 
-
+  import { doc, getDoc } from 'firebase/firestore';
+  import { db } from '@/Firebase/config';
   
-  import { deleteObjective } from '@/Firebase/Firestore/deleteObjective';
+  import CreateSkillModal from '@/components/CreateSkillModal.vue';
+  import EditSkillModal from '@/components/EditSkillModal.vue';
+  import { deleteSkill } from '@/Firebase/Firestore/deleteSkill';
   
   export default {
-    name: 'ObjectivesPage',
+    name: 'SkillsView',
     components: {
-        CreateObjectiveModal,
-        EditObjectiveModal
+      CreateSkillModal,
+      EditSkillModal,
     },
     data() {
       return {
         isLoading: false,
-        objectives: [],
+        skills: [],
         showModal: false,
         showEditModal: false,
-        selectedObjective: null,
-        currentUserId: null,
+        selectedSkill: null,
         userId: '',
-      }
-    },
-    computed: {
-      
+      };
     },
     methods: {
-      async fetchCurrentUser() {
-      const auth = getAuth();
-      const user = auth.currentUser;
-      if (user) {
-        this.currentUserId = user.uid;
-      }
-    },
-    created() {
-    this.fetchCurrentUser(); // Fetch current user ID when component is created
-  },
-      onObjectiveSaved() {
-        this.fetchObjectives() // Refresh the projects list
-        this.showModal = false
-        this.showEditModal = false
+      async fetchSkills() {
+        this.isLoading = true;
+        try {
+          const userDocRef = doc(db, 'users', this.id);
+          const userDocSnap = await getDoc(userDocRef);
+  
+          if (userDocSnap.exists()) {
+            const userData = userDocSnap.data();
+            const userSkills = userData.skills || [];
+            const fetchedSkills = [];
+
+            this.userId = userDocSnap.id;
+  
+            for (const skill of userSkills) {
+              const skillDoc = await getDoc(doc(db, 'skills', skill.id));
+              if (skillDoc.exists()) {
+                fetchedSkills.push({ id: skill.id, ...skillDoc.data() });
+              }
+            }
+  
+            this.skills = fetchedSkills;
+          }
+        } catch (error) {
+          console.error('Error fetching skills:', error);
+        }
+        this.isLoading = false;
+      },
+      onSkillSaved() {
+        this.fetchSkills();
+        this.showModal = false;
+        this.showEditModal = false;
       },
       openAddModal() {
-        this.selectedObjective = null
-        this.showModal = true
-        this.showEditModal = false
+        this.selectedSkill = null;
+        this.showModal = true;
+        this.showEditModal = false;
       },
-      editObjective(objective) {
-        console.log(objective); // Debugging
-        this.showModal = false
-        this.showEditModal = true
-        this.selectedObjective = objective
+      editSkill(skill) {
+        this.showModal = false;
+        this.showEditModal = true;
+        this.selectedSkill = skill;
       },
-      async deleteObjective(id) {
-        if (confirm('Are you sure you want to delete this objective?')) {
-            try {
-            await deleteObjective(id, this.userId);
-            this.fetchObjectives();
-            } catch (error) {
-            alert('Error deleting objective');
-            }
-        }
-        },
-      closeModal() {
-        this.showModal = false
-        this.showEditModal = false
-      },
-      async fetchObjectives() {
-            this.isLoading = true;
-            try {
-                const userDocRef = doc(db, 'users', this.id);
-                const userDocSnap = await getDoc(userDocRef);
-
-                if (userDocSnap.exists()) {
-                    const userData = userDocSnap.data();
-                    const userObjectives = userData.objectives || [];
-                    const fetchedObjectives = [];
-
-                    this.userId = userDocSnap.id;
-
-
-                    for (const obj of userObjectives) {
-                        const objDoc = await getDoc(doc(db, 'objectives', obj.id));
-                        if (objDoc.exists()) {
-                            fetchedObjectives.push({ id: obj.id, ...objDoc.data() });
-                        }
-                    }
-
-                    this.objectives = fetchedObjectives;
-                }
-            } catch (error) {
-                console.error("Error fetching objectives:", error);
-            }
-            this.isLoading = false;
-        }
+      getPercentage(level) {
+      const levelMapping = {
+        Beginner: 16.5,
+        Intermediate: 50,
+        Advanced: 83.5,
+      };
+      return levelMapping[level] || 0; // Default to 0% if level is invalid
     },
-    //mounted() {
-     // this.fetchObjectives()
-    // },
-
-
-    props: {
-        id: {
-            type: String,
-            required: true
+      async deleteSkill(id) {
+        if (confirm('Are you sure you want to delete this skill?')) {
+          try {
+            await deleteSkill(id, this.userId);
+            this.fetchSkills();
+          } catch (error) {
+            alert('Error deleting skill');
+          }
         }
+      },
+      closeModal() {
+        this.showModal = false;
+        this.showEditModal = false;
+      },
+    },
+    props: {
+      id: {
+        type: String,
+        required: true,
+      },
     },
     watch: {
-        id: {
-            immediate: true,
-            handler() {
-                this.fetchObjectives();
-            }
-        }
-    }
-  }
+      id: {
+        immediate: true,
+        handler() {
+          this.fetchSkills();
+        },
+      },
+    },
+  };
   </script>
-  
-  
-  
-  <style scoped>
+
+
+<style scoped>
   /* Base container styles */
   .p-6 {
     padding: 1.5rem;
@@ -503,7 +481,7 @@
 .progress-fill {
   height: 100%;
   border-radius: 4px;
-  transition: width 0.3s ease, background-color 0.3s ease;
+  transition: width 0.4s ease, background-color 0.3s ease;
 }
 
 /* Color classes for progress (already defined in template) */
@@ -598,5 +576,5 @@
   margin-top: 2rem;
   border: 1px dashed #cbd5e1;
 }
-  
-  </style>
+
+</style>

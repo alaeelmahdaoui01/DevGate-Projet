@@ -29,4 +29,4 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
-export { db, auth, provider };
+export { db, auth, provider, app }; // I added 'app' as it is needed for deleteobjective.Js

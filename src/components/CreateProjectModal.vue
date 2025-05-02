@@ -93,14 +93,14 @@ export default {
   },
 
   methods: {
-    resetForm() {
-      this.title = ""
-      this.description = ""
-      this.stackInput = ""
-      this.githubLink = ""
-      this.message = ""
-      this.stackInput = ""
-    },
+    // resetForm() {
+    //   this.title = ""
+    //   this.description = ""
+    //   this.stackInput = ""
+    //   this.githubLink = ""
+    //   this.message = ""
+    //   this.stackInput = ""
+    // },
 
     async createProject() {
       this.message = ""

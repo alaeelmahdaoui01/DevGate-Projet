@@ -51,6 +51,7 @@ import { db } from '@/Firebase/config'
 import {  addDoc, collection, serverTimestamp } from 'firebase/firestore'
 import { getUser, waitForAuthInit } from '@/Firebase/Authentification/getUser'
 
+
 export default {
 name: "EditObjModal",
 props: {
@@ -91,10 +92,10 @@ watch: {
 },
 methods: {
   resetForm() {
-    this.title = ""
-    this.description = ""
-    this.status = ""
-    this.progress = 0
+    this.title = "",
+    this.description = "",
+    this.status = "",
+    this.progress = 0,
     this.message = ""
   },
   async updateObjective() {
@@ -108,7 +109,7 @@ methods: {
         progress: this.progress,
       }
 
-      await editObjective(this.selectedObjective.id, updatedData)
+      await editObjective(this.selectedObjective.id, updatedData, this.user.uid)
 
       // Log to timeline
       if (this.user) {
@@ -295,7 +296,6 @@ transition: background 0.3s;
 }
 
 .slider::-webkit-slider-thumb {
--webkit-appearance: none;
 appearance: none;
 width: 20px;
 height: 20px;

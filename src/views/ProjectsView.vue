@@ -2,7 +2,7 @@
   <div class="p-6">
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-2xl font-bold">My Projects</h1>
-      <button @click="openAddModal" class="btn-primary">+ Add Project</button>
+      <button v-if="id === currentUserId" @click="openAddModal" class="btn-primary">+ Add Project</button>
     </div>
 
     <div class="flex justify-between items-center mb-4">
@@ -24,6 +24,7 @@
         v-for="project in filteredProjects"
         :key="project.id"
         :project="project"
+        :Id="id"
         @edit="editProject"
         @delete="deleteProject"
       />
@@ -57,8 +58,8 @@
           </div>
         </div>
         <div class="project-actions">
-          <button class="btn-sm" @click="editProject(project)">Edit</button>
-          <button class="btn-sm btn-danger" @click="deleteProject(project.id)">Delete</button>
+          <button v-if="id === currentUserId" class="btn-sm" @click="editProject(project)">Edit</button>
+          <button v-if="id === currentUserId" class="btn-sm btn-danger" @click="deleteProject(project.id)">Delete</button>
         </div>
       </div>
     </div>
@@ -83,6 +84,7 @@
 <script>
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '@/Firebase/config'
+import { getAuth } from 'firebase/auth';
 
 import ProjectCard from '@/components/ProjectCard.vue'
 import ProjectModal from '@/components/CreateProjectModal.vue'
@@ -105,6 +107,8 @@ export default {
       showModal: false,
       showEditModal: false,
       selectedProject: null,
+      currentUserId: null,
+      userId: '',
     }
   },
   computed: {
@@ -122,6 +126,13 @@ export default {
     }
   },
   methods: {
+    async fetchCurrentUser() {
+      const auth = getAuth();
+      const user = auth.currentUser;
+      if (user) {
+        this.currentUserId = user.uid;
+      }
+    },
     onProjectSaved() {
       this.fetchProjects() // Refresh the projects list
       this.showModal = false
@@ -140,7 +151,7 @@ export default {
     },
     async deleteProject(id) {
       try {
-        await deleteProject(id);
+        await deleteProject(id, this.userId);
         this.fetchProjects(); // Refresh list after deletion
       } catch (error) {
         alert('Error deleting project');
@@ -161,6 +172,8 @@ export default {
                     const userProjects = userData.projects || [];
                     const fetchedProjects = [];
 
+                    this.userId = userDocSnap.id;
+
                     for (const proj of userProjects) {
                         const projDoc = await getDoc(doc(db, 'projects', proj.id));
                         if (projDoc.exists()) {
@@ -175,6 +188,9 @@ export default {
             }
             this.isLoading = false;
         },
+  },
+  created() {
+    this.fetchCurrentUser(); // Fetch current user ID when component is created
   },
   //mounted() {
     //this.fetchProjects()
@@ -196,7 +212,6 @@ export default {
     }
 }
 </script>
-
 
 
 <style scoped>

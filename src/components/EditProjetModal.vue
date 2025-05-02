@@ -50,10 +50,10 @@
 
 <script>
 import { getAuth } from 'firebase/auth'
-
 import { editProject } from '@/Firebase/Firestore/editProject'
 import { db } from '@/Firebase/config'
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
+import { getUser, waitForAuthInit } from '@/Firebase/Authentification/getUser'
 
 export default {
   name: "EditProjectModal",
@@ -72,7 +72,8 @@ export default {
       githubLink: "",
       imageFile: null,
       message: "",
-      imageBase64: ""
+      imageBase64: "",
+      user: ""
     }
   },
 
@@ -115,7 +116,7 @@ export default {
         }
 
         // 1. Update the project
-        await editProject(this.selectedProject.id, updatedData)
+        await editProject(this.selectedProject.id, updatedData, this.user.uid)
 
         // 2. Add to timeline ✨
         await this.addEditToTimeline()
@@ -167,10 +168,22 @@ try {
       }
     }
   },
+  async created() {
+  try {
+    await waitForAuthInit()
+    this.user = getUser()
 
-  mounted() {
-    console.log(this.selectedProject)
+    if (!this.user) {
+      console.warn('User not authenticated')
+      this.$router.push('/login')
+    }
+  } catch (err) {
+    console.error('Auth error:', err)
   }
+},
+mounted() {
+  console.log("Selected project:", this.selectedProject)
+}
 }
 </script>
 

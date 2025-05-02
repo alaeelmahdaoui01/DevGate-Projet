@@ -67,7 +67,7 @@ export default {
             projects: [],
             certificates: [],
             objectives: [],
-            competences: []
+            skills: []
             });
         }
 

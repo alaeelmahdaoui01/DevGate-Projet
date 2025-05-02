@@ -5,6 +5,7 @@
               <router-link :to="'/dashboard/' + user.uid" class="button">Dashboard</router-link>
               <router-link :to="'/projects/' + user.uid" class="button">Projects</router-link>
               <router-link :to="'/objectives/' + user.uid" class="button">Objectives</router-link>
+              <router-link :to="'/skills/' + user.uid" class="button">Skills</router-link>
               <router-link to="/timeline" class="button">Timeline</router-link>
           </div>
 
@@ -111,11 +112,20 @@ async searchUsers() {
                 this.goToUserProfile(this.searchResults[0].id);
             }
         },
+        // goToUserProfile(userId) {
+        //     this.searchQuery = '';
+        //     this.searchResults = [];
+        //     this.$router.push(`/dashboard/${userId}`);
+        // }
         goToUserProfile(userId) {
-            this.searchQuery = '';
-            this.searchResults = [];
-            this.$router.push(`/dashboard/${userId}`);
-        }
+          this.searchQuery = '';
+          this.searchResults = [];
+          this.$router.push(`/dashboard/${userId}`).then(() => {
+              window.location.reload();
+          }).catch(err => {
+              console.error('Navigation error:', err);
+        });
+    }
     },
     created() {
         // Pour fermer les résultats de recherche quand on clique ailleurs

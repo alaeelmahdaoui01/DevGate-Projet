@@ -46,7 +46,7 @@ export default {
           projects: [],
           certificates: [],
           objectives: [],
-          competences: [],
+          skills: [],
           photoURL: photoURL,
         });
 
@@ -77,7 +77,7 @@ export default {
             projects: [],
             certificates: [],
             objectives: [],
-            competences: []
+            skills: []
           });
         }
 

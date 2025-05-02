@@ -2,33 +2,43 @@
      <div class="dashboard-container">
       <!-- Sidebar -->
       <aside class="sidebar">
-      <div class="profile-section">
-        <img
-          :src="userProfile?.photoURL || 'https://via.placeholder.com/150'"
-          alt="User Avatar"
-          class="profile-avatar"
-        />
-        <h2 class="profile-name">{{ userProfile?.displayName || 'Loading...' }}</h2>
-        <p class="profile-bio" v-if="userProfile?.status">{{ userProfile?.status }}</p>
-        <ul class="profile-details">
-          <li v-if="userProfile?.email"><strong>Email: </strong> {{ userProfile.email }}</li>
-          <li><strong>Repositories: </strong> {{ projects.length }}</li>
-          <li v-if="userProfile?.location"><strong>Location: </strong> {{ userProfile.location }}</li>
-          <li v-if="userProfile?.linkedin"><strong>LinkedIn: </strong> 
-            <a v-if="userProfile?.linkedin" :href="userProfile.linkedin" target="_blank">{{ userProfile.linkedin }}</a>
-          </li>
-        </ul>
-      </div>
+  <div class="profile-section">
+    <img
+      :src="userProfile?.photoURL || 'https://via.placeholder.com/150'"
+      alt="User Avatar"
+      class="profile-avatar"
+    />
+    <h2 class="profile-name">{{ userProfile?.displayName || 'Loading...' }}</h2>
+    <p class="profile-bio" v-if="userProfile?.status">{{ userProfile?.status }}</p>
+    <ul class="profile-details">
+      <li v-if="userProfile?.email"><strong>Email: </strong> {{ userProfile.email }}</li>
+      <li><strong>Repositories: </strong> {{ projects.length }}</li>
+      <li v-if="userProfile?.location"><strong>Location: </strong> {{ userProfile.location }}</li>
+      <li v-if="userProfile?.linkedin"><strong>LinkedIn: </strong> 
+        <a :href="userProfile.linkedin" target="_blank">{{ userProfile.linkedin }}</a>
+      </li>
+    </ul>
 
-      <!-- Edit Profile Button -->
-      <button 
-        v-if="isCurrentUser"
-        class="edit-profile-btn"
-        @click="editProfile"
-      >
-        Edit Profile
-      </button>
-    </aside>
+    <!-- Skills Section -->
+    <div v-if="userProfile && userProfile.skills && userProfile.skills.length" class="skills-section">
+      <h3>Skills</h3>
+      <ul class="skills-list">
+        <li v-for="skill in userProfile.skills" :key="skill" class="skill-item">
+          {{ skill.name }}
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <button 
+    v-if="isCurrentUser"
+    class="edit-profile-btn"
+    @click="editProfile"
+  >
+    Edit Profile
+  </button>
+</aside>
+
   
       <!-- Main Content -->
       <main class="main-content">
@@ -119,21 +129,34 @@
             </div>
           </div>
         </div>
+
+
+        <div class="visualization-section">
+        <h1 class="visualization-title">Visualization</h1>
+        <div class="visualization-content">
+          <ProjectsPerDay :userId="id" />
+          <ProgressOverTime :userId="id" />
+        </div>
+      </div>
+
       </main>
     </div>
 </template>
 
 
   
-  <script>
+<script>
   import { doc, getDoc } from 'firebase/firestore';
   import { db } from '@/Firebase/config';
   import { waitForAuthInit, getUser } from '@/Firebase/Authentification/getUser';
-  
+  import ProjectsPerDay from '@/components/ProjectPerMonth.vue'
+  import ProgressOverTime from '@/components/ProgressOverTime.vue'
+
   export default {
     name: 'DashboardView',
+    components: { ProjectsPerDay, ProgressOverTime },
     props: {
-      id: {  // Changé de userId à id pour correspondre à objectivesView.vue
+      id: {  
         type: String,
         required: true,
       },
@@ -143,6 +166,7 @@
         isLoading: false,
         projects: [],
         objectives: [],
+        skills: [],
         userProfile: null,
         currentUser: null,
       };
@@ -200,6 +224,18 @@
               }
             }
             this.objectives = fetchedObjectives;
+
+
+            const userSkills = userData.skills || [];
+            const fetchedSkills = [];
+            for (const skill of userSkills) {
+              const skillDoc = await getDoc(doc(db, 'skills', skill.id));
+              if (skillDoc.exists()) {
+                fetchedSkills.push({ id: skill.id, ...skillDoc.data() });
+              }
+            }
+            this.skills = fetchedSkills;
+
           } else {
             console.warn('User document not found in Firestore');
           }
@@ -224,8 +260,8 @@
   };
   </script>
 
+<style scoped>
   
-  <style scoped>
   .dashboard-container {
     display: flex;
     min-height: 100vh;
@@ -721,4 +757,32 @@
     height: 40px;
   }
 }
+.skills-section {
+  margin-top: 1.5rem;
+}
+
+.skills-section h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1e40af;
+  margin-bottom: 0.75rem;
+}
+
+.skills-list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.skill-item {
+  background: #e0f2fe;
+  color: #0284c7;
+  padding: 0.5rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
   </style>

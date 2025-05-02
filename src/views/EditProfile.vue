@@ -169,7 +169,7 @@ mounted() {
 <style scoped>
 .profile-edit-container {
   max-width: 600px;
-  margin: 0 auto;
+  margin: 100px auto;
   padding: 1.5rem;
   background: #f9fafb;
   border-radius: 8px;

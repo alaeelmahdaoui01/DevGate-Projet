@@ -6,6 +6,8 @@ import DashboardView from '@/views/DashboardView.vue'
 import EditProfile from '@/views/EditProfile.vue'
 import ObjectivesView from '../views/ObjectivesView.vue'
 import TimelineView from '@/views/TimelineView.vue'
+import SkillsView from '@/views/SkillsView.vue'
+
 
 const routes = [{
         path: '/',
@@ -32,6 +34,12 @@ const routes = [{
         path: '/objectives/:id',
         name: 'objectives',
         component: ObjectivesView,
+        props: true
+    },
+    {
+        path: '/skills/:id',
+        name: 'skills',
+        component: SkillsView,
         props: true
     },
     {
