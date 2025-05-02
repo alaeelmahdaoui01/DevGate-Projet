@@ -2,26 +2,25 @@
     <div class="timeline-page">
       <h1 class="title">Timeline</h1>
       <div class="filter-container">
-  <label for="filter">Filter by Action:</label>
-  <select id="filter" v-model="selectedType" class="filter-select">
-    <option value="">All</option>
-    <option value="Created Project">Created Project</option>
-    <option value="Edited Project">Edited Project</option>
-    <option value="added objective">Added Objective</option>
-    <option value="edited objective">Edited Objective</option>
-    <!-- add more types if you have -->
-  </select>
-</div>
+      <label for="filter">Filter by Action:</label>
+      <select id="filter" v-model="selectedType" class="filter-select">
+        <option value="">All</option>
+        <option value="Created Project">Created Project</option>
+        <option value="Edited Project">Edited Project</option>
+        <option value="added objective">Added Objective</option>
+        <option value="edited objective">Edited Objective</option>
+        <!-- add more types if you have -->
+      </select>
+    </div>
 
       <div class="timeline-container">
-        
         <div 
-  v-for="item in filteredTimelineItems" 
-  :key="item.id" 
-  class="timeline-item"
-  @click="goToUserDashboard(item.userId)" 
-  style="cursor: pointer;"
->
+        v-for="item in filteredTimelineItems" 
+        :key="item.id" 
+        class="timeline-item"
+        @click="goToUserDashboard(item.userId)" 
+        style="cursor: pointer;"
+        >
 
           <h2 class="timeline-item-title">
             {{ item.userName }} {{ item.type }} "{{ item.title }}"
@@ -34,10 +33,10 @@
           </p>
         </div>
       </div>
-    </div>
-  </template>
+  </div>
+</template>
   
-  <script>
+<script>
   import { db } from '@/Firebase/config'
   import { collection, getDocs, doc, getDoc } from 'firebase/firestore'
   
@@ -112,13 +111,13 @@
   }
 }
 
-  </script>
+</script>
   
   
 
   
   
-  <style scoped>
+<style scoped>
 .timeline-page {
   padding: 1.5rem;
   padding-top: 6rem;
