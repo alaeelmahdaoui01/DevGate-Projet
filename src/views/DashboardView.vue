@@ -4,7 +4,7 @@
       <aside class="sidebar">
   <div class="profile-section">
     <img
-      :src="userProfile?.photoURL || 'https://via.placeholder.com/150'"
+      :src="userProfile?.photoURL || userAvatar"
       alt="User Avatar"
       class="profile-avatar"
     />
@@ -12,13 +12,13 @@
     <p class="profile-bio" v-if="userProfile?.status">{{ userProfile?.status }}</p>
     <ul class="profile-details">
       <li v-if="userProfile?.email"><strong>Email: </strong> {{ userProfile.email }}</li>
-      <li><strong>Repositories: </strong> {{ projects.length }}</li>
+      <li v-if="true"><strong>  Repositories: </strong> {{ projects.length }}</li>
       <li v-if="userProfile?.location"><strong>Location: </strong> {{ userProfile.location }}</li>
       <li v-if="userProfile?.linkedin"><strong>LinkedIn: </strong> 
         <a :href="userProfile.linkedin" target="_blank">{{ userProfile.linkedin }}</a>
       </li>
     </ul>
-
+    <br>
     <!-- Skills Section -->
     <div v-if="userProfile && userProfile.skills && userProfile.skills.length" class="skills-section">
       <h3>Skills</h3>
@@ -29,7 +29,7 @@
       </ul>
     </div>
   </div>
-
+  <br>
   <button 
     v-if="isCurrentUser"
     class="edit-profile-btn"
@@ -57,7 +57,7 @@
         </div>
         <div v-else class="card-grid">
             <div
-            v-for="project in projects.slice(0, 3)"
+            v-for="project in projects.slice(0, 2)"
             :key="project.id"
             class="project-card"
             >
@@ -87,7 +87,7 @@
             </div>
             </div>
         </div>
-  
+        <br><br>
         <!-- Objectives Section -->
         <div class="section-header">
           <h1>Objectives</h1>
@@ -103,7 +103,7 @@
         </div>
         <div v-else class="card-grid">
           <div 
-            v-for="objective in objectives.slice(0, 3)" 
+            v-for="objective in objectives.slice(0, 2)" 
             :key="objective.id" 
             class="objective-card"
           >
@@ -130,7 +130,7 @@
           </div>
         </div>
 
-
+        <br><br>
         <div class="visualization-section">
         <h1 class="visualization-title">Visualization</h1>
         <div class="visualization-content">
@@ -140,6 +140,16 @@
       </div>
 
       </main>
+
+      <div v-if="showModal" class="modal-overlay">
+        <div v-if="showModal" class="modal-content">
+        <EditModal 
+          :id="id"
+          @close="closeModal"
+          @save="updateUserProfile"
+        />
+      </div></div>
+
     </div>
 </template>
 
@@ -151,10 +161,11 @@
   import { waitForAuthInit, getUser } from '@/Firebase/Authentification/getUser';
   import ProjectsPerDay from '@/components/ProjectPerMonth.vue'
   import ProgressOverTime from '@/components/ProgressOverTime.vue'
+  import EditModal from '@/views/EditProfile.vue'
 
   export default {
     name: 'DashboardView',
-    components: { ProjectsPerDay, ProgressOverTime },
+    components: { ProjectsPerDay, ProgressOverTime, EditModal },
     props: {
       id: {  
         type: String,
@@ -163,6 +174,7 @@
     },
     data() {
       return {
+        showModal:false,
         isLoading: false,
         projects: [],
         objectives: [],
@@ -246,8 +258,15 @@
         }
       },
       editProfile() {
-        this.$router.push(`/editprofile/${this.id}`);
+        this.showModal= true;
       },
+      closeModal(){
+        this.showModal= false;
+      },
+      updateUserProfile(updatedProfile){
+        this.userProfile = { ...this.userProfile, ...updatedProfile };
+        this.closeModal();
+      }
     },
     watch: {
       id: {
@@ -261,7 +280,49 @@
   </script>
 
 <style scoped>
-  
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  /* Account for navbar height */
+  top: 60px; /* Adjust this value to match your navbar height */
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  max-width: 600px;
+  width: 100%;
+  max-height: calc(100vh - 100px); /* Adjust based on navbar */
+  overflow-y: auto;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Make sure buttons stay visible */
+.profile-edit-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 400px; /* Minimum height to ensure buttons are visible */
+}
+
+.form-actions {
+  margin-top: auto; /* Pushes buttons to bottom */
+  padding-top: 20px;
+  position: sticky;
+  bottom: 0;
+  background: white;
+}
+
+
   .dashboard-container {
     display: flex;
     min-height: 100vh;

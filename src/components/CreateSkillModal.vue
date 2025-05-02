@@ -16,6 +16,7 @@
             <option value="Beginner">Beginner</option>
             <option value="Intermediate">Intermediate</option>
             <option value="Advanced">Advanced</option>
+            <option value="Expert">Expert</option>
           </select>
         </div>
 
@@ -139,7 +140,7 @@ export default {
             userId: user.uid,
             type: "added skill",
             title: skillData.name,
-            description: "Created a new skill.",
+            description: skillData.description,
             date: serverTimestamp(),
           });
 

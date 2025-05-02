@@ -117,7 +117,7 @@ methods: {
           userId: this.user.uid,
           type: "edited objective",
           title: updatedData.title,
-          description: "Updated an existing objective.",
+          description: updatedData.description,
           date: serverTimestamp()
         })
       }

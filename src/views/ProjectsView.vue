@@ -1,7 +1,7 @@
 <template>
   <div class="p-6">
     <div class="flex justify-between items-center mb-6">
-      <h1 class="text-2xl font-bold">My Projects</h1>
+      <h1 class="text-2xl font-bold">Projects</h1>
       <button v-if="id === currentUserId" @click="openAddModal" class="btn-primary">+ Add Project</button>
     </div>
 
@@ -17,6 +17,13 @@
         <input v-model="searchStack" placeholder="Filter by stack or title..." class="input" />
       </div>
     </div>
+
+    <div v-if="!isLoading && projects.length === 0" class="empty-state">
+      <div class="empty-icon">📂</div>
+      <p>No projects found. Add your first project to get started!</p>
+      <button @click="openAddModal" class="btn-primary">Add project</button>
+    </div>
+
 
     <!-- Gallery View -->
     <div v-if="viewMode === 'gallery'" class="projects-grid">
@@ -75,6 +82,11 @@
         @saved="onProjectSaved"
       />
     </div>
+
+    <div v-if="isLoading" class="loading-container">
+      <div class="loading-spinner"></div>
+    </div>
+
   </div>
 </template>
 
@@ -101,6 +113,7 @@ export default {
   },
   data() {
     return {
+      isLoading: false,
       viewMode: 'gallery',
       searchStack: '',
       projects: [],
@@ -150,13 +163,15 @@ export default {
       this.selectedProject = project
     },
     async deleteProject(id) {
-      try {
-        await deleteProject(id, this.userId);
-        this.fetchProjects(); // Refresh list after deletion
-      } catch (error) {
-        alert('Error deleting project');
-      }
-    },
+        if (confirm('Are you sure you want to delete this project?')) {
+          try {
+            await deleteProject(id, this.userId);
+            this.fetchProjects();
+          } catch (error) {
+            alert('Error deleting project');
+          }
+        }
+      },
     closeModal() {
       this.showModal = false
       this.showEditModal = false
@@ -215,6 +230,65 @@ export default {
 
 
 <style scoped>
+
+/* Loading State */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(59, 130, 246, 0.1);
+  border-top: 4px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+.btn-primary {
+  background: linear-gradient(to right, #3b82f6, #6366f1);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 5px rgba(59, 130, 246, 0.2);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  margin-top: 2rem;
+  border: 1px dashed rgba(203, 213, 225, 0.5);
+}
+
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.empty-state p {
+  color: #64748b;
+  margin-bottom: 1.5rem;
+}
 /* Base container styles */
 .p-6 {
   padding: 1.5rem;
