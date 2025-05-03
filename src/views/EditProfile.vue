@@ -64,6 +64,17 @@
         >
       </div>
 
+      <div class="form-group">
+        <label for="bio">Bio</label>
+        <textarea
+          id="bio"
+          v-model="updatedBio"
+          placeholder="Enter a bio"
+          class="form-textarea"
+          rows="4"
+        ></textarea>
+      </div>
+
       <!-- Profile Picture -->
       <div class="form-group">
         <label>Profile Picture</label>
@@ -139,6 +150,7 @@ data() {
     updatedLocation: '',
     updatedStatus: '',
     updatedLinkedin: '',
+    updatedBio: '',
     updatedPhotoBase64: '',
     defaultAvatar: 'https://www.shutterstock.com/image-vector/default-avatar-profile-icon-vector-600nw-1745180411.jpg',
     originalPhoto: ''
@@ -158,6 +170,7 @@ methods: {
         this.updatedLocation = this.user.location || '';
         this.updatedStatus = this.user.status || '';
         this.updatedLinkedin = this.user.linkedin || '';
+        this.updatedBio = this.user.bio || '';
         this.updatedPhotoBase64 = this.user.photoURL || this.defaultAvatar;
         this.originalPhoto = this.user.photoURL || this.defaultAvatar;
       }
@@ -196,6 +209,7 @@ methods: {
       location: this.updatedLocation,
       status: this.updatedStatus,
       linkedin: this.updatedLinkedin,
+      bio: this.updatedBio,
       photoURL: this.updatedPhotoBase64 === this.defaultAvatar ? '' : this.updatedPhotoBase64,
     };
 
@@ -400,5 +414,19 @@ mounted() {
   }
 }
 
+.form-textarea {
+  padding: 0.75rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  background: rgba(255, 255, 255, 0.9);
+  resize: vertical; /* Allow vertical resizing only */
+}
 
+.form-textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
 </style>

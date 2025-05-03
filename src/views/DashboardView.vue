@@ -12,12 +12,17 @@
     <p class="profile-bio" v-if="userProfile?.status">{{ userProfile?.status }}</p>
     <br>
     <ul class="profile-details">
-      <li v-if="userProfile?.email" class="b"><strong>Email: </strong> {{ userProfile.email }}</li>
-      <li class="a"><strong>  Repositories: </strong> {{ projects.length }}</li>
-      <li v-if="userProfile?.location"><strong>Location: </strong> {{ userProfile.location }}</li>
-      <li v-if="userProfile?.linkedin"><strong>LinkedIn: </strong> 
-        <a :href="userProfile.linkedin" target="_blank">{{ userProfile.linkedin }}</a>
+      <li v-if="userProfile?.email" class="b"><strong>Email : </strong> {{ userProfile.email }}</li>
+      <li class="a"><strong>  Repositories : </strong> {{ projects.length }}</li>
+      <li v-if="userProfile?.location"><strong>Location : </strong> {{ userProfile.location }}</li>
+      
+      <li v-if="userProfile?.linkedin"><strong>LinkedIn : </strong> 
+        <a :href="userProfile.linkedin" target="_blank" class="link">{{ userProfile.linkedin }}</a>
       </li>
+
+      
+      <li v-if="userProfile?.bio" class="bio"><strong>Bio : </strong> {{ userProfile.bio }}</li>
+
     </ul>
     <br>
     <!-- Skills Section -->
@@ -308,6 +313,19 @@ goToSkills() {
   </script>
 
 <style scoped>
+
+.bio {
+  font-size: 0.95rem; 
+  color: #4b5563; 
+  line-height: 1.6; 
+  margin-top: 1rem; 
+  padding: 0.75rem 1rem; 
+  background: rgba(59, 130, 246, 0.1); 
+  border-left: 4px solid #3b82f6; 
+  border-radius: 8px; 
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); 
+}
+
 .modal-overlay {
   position: fixed;
   top: 100px;
@@ -985,5 +1003,27 @@ goToSkills() {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+.link {
+  color: #0a66c2; /* LinkedIn blue color */
+  font-weight: 500;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.link:hover {
+  color: #004182; /* Darker blue on hover */
+  text-decoration: underline; /* Add underline on hover */
+  transform: translateX(2px); /* Subtle movement on hover */
+}
+
+.link svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor; /* Use the same color as the text */
 }
   </style>
