@@ -7,7 +7,11 @@
       </button>
     </div>
   
-    <div v-if="!isLoading && skills.length === 0" class="empty-state">
+    <div v-if="isLoading" class="loading-container">
+      <div class="loading-spinner"></div>
+    </div>
+
+    <div v-else-if="!isLoading && skills.length === 0" class="empty-state">
       <div class="empty-icon">🧑‍💻</div>
       <p>No skills found.</p> <p v-if="id === currentUserId">Add your first skill to get started!</p>
       <button @click="openAddModal" class="btn-primary" v-if="id === currentUserId">Add skill</button>
@@ -69,9 +73,7 @@
       />
     </div>
   
-    <div v-if="isLoading" class="loading-container">
-      <div class="loading-spinner"></div>
-    </div>
+    
   </div>
 </template>
   
