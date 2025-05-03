@@ -7,8 +7,8 @@
 
       <div v-if="!isLoading && objectives.length === 0" class="empty-state">
       <div class="empty-icon">🎯</div>
-      <p>No objectives found. Add your first objectuve to get started!</p>
-      <button @click="openAddModal" class="btn-primary">Add objective</button>
+      <p>No objectives found.</p> <p v-if="id === currentUserId">Add your first objective to get started!</p>
+      <button @click="openAddModal" class="btn-primary" v-if="id === currentUserId">Add objective</button>
     </div>
     
         <div v-else>
@@ -434,7 +434,7 @@
   /* Modal */
   .modal-overlay {
     position: fixed;
-    top: 0;
+    top: 60px;
     left: 0;
     right: 0;
     bottom: 0;

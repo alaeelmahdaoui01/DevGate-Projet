@@ -2,7 +2,7 @@
   <div class="p-6">
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-2xl font-bold">Projects</h1>
-      <button v-if="id === currentUserId" @click="openAddModal" class="btn-primary">+ Add Project</button>
+      <button v-show="id === currentUserId" @click="openAddModal" class="btn-primary">+ Add Project</button>
     </div>
 
     <div class="flex justify-between items-center mb-4">
@@ -20,8 +20,8 @@
 
     <div v-if="!isLoading && projects.length === 0" class="empty-state">
       <div class="empty-icon">📂</div>
-      <p>No projects found. Add your first project to get started!</p>
-      <button @click="openAddModal" class="btn-primary">Add project</button>
+      <p>No projects found.</p> <p v-if="id === currentUserId">Add your first project to get started!</p>
+      <button @click="openAddModal" class="btn-primary" v-if="id === currentUserId">Add project</button>
     </div>
 
 
@@ -72,15 +72,21 @@
     </div>
 
     <div v-if="showModal" class="modal-overlay">
-      <ProjectModal @close="closeModal" @saved="onProjectSaved" />
+      <div class="modal-content">
+    <ProjectModal @close="closeModal" @saved="onProjectSaved" />
+  </div>
     </div>
 
     <div v-if="showEditModal" class="modal-overlay">
-      <EditProjectModal 
-        :selectedProject="selectedProject"
-        @close="closeModal"
-        @saved="onProjectSaved"
-      />
+
+      <div class="modal-content">
+    <EditProjectModal 
+      :selectedProject="selectedProject"
+      @close="closeModal"
+      @saved="onProjectSaved"
+    />
+  </div>
+    
     </div>
 
     <div v-if="isLoading" class="loading-container">
@@ -204,9 +210,10 @@ export default {
             this.isLoading = false;
         },
   },
-  created() {
-    this.fetchCurrentUser(); // Fetch current user ID when component is created
-  },
+  mounted() {
+  this.fetchCurrentUser();
+},
+
   //mounted() {
     //this.fetchProjects()
   //},
@@ -488,10 +495,10 @@ export default {
   margin-left: 1.5rem;
 }
 
-/* Modal */
+
 .modal-overlay {
   position: fixed;
-  top: 0;
+  top: 80px;
   left: 0;
   right: 0;
   bottom: 0;
@@ -502,6 +509,9 @@ export default {
   justify-content: center;
   padding: 1rem;
 }
+
+
+
 
 /* Responsive Design */
 @media (max-width: 1024px) {

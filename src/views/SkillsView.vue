@@ -1,16 +1,16 @@
 <template>
   <div class="skills-container">
     <div class="skills-header">
-      <h1 class="skills-title">My Skills</h1>
-      <button @click="openAddModal" class="add-skill-btn">
+      <h1 class="skills-title">Skills</h1>
+      <button v-if="id === currentUserId" @click="openAddModal" class="add-skill-btn">
         <span>+ Add Skill</span>
       </button>
     </div>
   
     <div v-if="!isLoading && skills.length === 0" class="empty-state">
       <div class="empty-icon">🧑‍💻</div>
-      <p>No skills found. Add your first skill to get started!</p>
-      <button @click="openAddModal" class="btn-primary">Add Skill</button>
+      <p>No skills found.</p> <p v-if="id === currentUserId">Add your first skill to get started!</p>
+      <button @click="openAddModal" class="btn-primary" v-if="id === currentUserId">Add skill</button>
     </div>
     
     <div v-else class="skills-grid">
@@ -23,13 +23,13 @@
           <div class="skill-header">
             <h3 class="skill-name">{{ skill.name }}</h3>
             <div class="skill-actions">
-              <button class="edit-btn" @click.stop="editSkill(skill)">
+              <button class="edit-btn" @click.stop="editSkill(skill)" v-if="id === currentUserId">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                   <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                 </svg>
               </button>
-              <button class="delete-btn" @click.stop="deleteSkill(skill.id)">
+              <button class="delete-btn" @click.stop="deleteSkill(skill.id)" v-if="id === currentUserId">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M3 6h18"></path>
                   <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -78,7 +78,8 @@
   <script>
   import { doc, getDoc } from 'firebase/firestore';
   import { db } from '@/Firebase/config';
-  
+  import { getAuth } from 'firebase/auth';
+
   import CreateSkillModal from '@/components/CreateSkillModal.vue';
   import EditSkillModal from '@/components/EditSkillModal.vue';
   import { deleteSkill } from '@/Firebase/Firestore/deleteSkill';
@@ -97,9 +98,17 @@
         showEditModal: false,
         selectedSkill: null,
         userId: '',
+        currentUserId: null,
       };
     },
     methods: {
+      async fetchCurrentUser() {
+      const auth = getAuth();
+      const user = auth.currentUser;
+      if (user) {
+        this.currentUserId = user.uid;
+      }
+    },
       progressFillClass(level) {
         const percent = this.getPercentage(level);
         if (percent == 30) return 'progress-beginner';
@@ -187,6 +196,9 @@
         },
       },
     },
+    created() {
+    this.fetchCurrentUser(); // Fetch current user ID when component is created
+  },
   };
   </script>
 
@@ -457,7 +469,7 @@
 /* Modal */
 .modal-overlay {
   position: fixed;
-  top: 0;
+  top: 60px;
   left: 0;
   right: 0;
   bottom: 0;
