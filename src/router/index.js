@@ -7,7 +7,7 @@ import EditProfile from '@/views/EditProfile.vue'
 import ObjectivesView from '../views/ObjectivesView.vue'
 import TimelineView from '@/views/TimelineView.vue'
 import SkillsView from '@/views/SkillsView.vue'
-
+import VisComp from '@/components/VisCompskill2.vue'
 
 const routes = [{
         path: '/',
@@ -51,6 +51,12 @@ const routes = [{
         path: '/dashboard/:id',
         name: 'dashboard',
         component: DashboardView,
+        props: true
+    },
+    {
+        path: '/viscomp/:id',
+        name: 'viscomp',
+        component: VisComp,
         props: true
     },
     {

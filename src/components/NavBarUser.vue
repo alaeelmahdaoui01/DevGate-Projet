@@ -7,6 +7,7 @@
               <router-link :to="'/objectives/' + user.uid" class="button">Objectives</router-link>
               <router-link :to="'/skills/' + user.uid" class="button">Skills</router-link>
               <router-link to="/timeline" class="button">Timeline</router-link>
+              <!--router-link :to="'/viscomp/' + user.uid" class="button">Viscomp</router-link-->
           </div>
 
           <div class="search-container">

@@ -5,7 +5,11 @@
         <button v-if="id === currentUserId" @click="openAddModal" class="btn-primary">+ Add Objective</button>
       </div>
 
-      <div v-if="!isLoading && objectives.length === 0" class="empty-state">
+      <div v-if="isLoading" class="loading-container">
+      <div class="loading-spinner"></div>
+    </div>
+
+      <div v-else-if="!isLoading && objectives.length === 0" class="empty-state">
       <div class="empty-icon">🎯</div>
       <p>No objectives found.</p> <p v-if="id === currentUserId">Add your first objective to get started!</p>
       <button @click="openAddModal" class="btn-primary" v-if="id === currentUserId">Add objective</button>
@@ -67,9 +71,7 @@
           @saved="onObjectiveSaved"
         />
       </div>
-      <div v-if="isLoading" class="loading-container">
-      <div class="loading-spinner"></div>
-    </div>
+      
     </div>
 
   </template>

@@ -18,13 +18,17 @@
       </div>
     </div>
 
-    <div v-if="!isLoading && projects.length === 0" class="empty-state">
+    <div v-if="isLoading" class="loading-container">
+      <div class="loading-spinner"></div>
+    </div>
+
+    <div v-else-if="!isLoading && projects.length === 0" class="empty-state">
       <div class="empty-icon">📂</div>
       <p>No projects found.</p> <p v-if="id === currentUserId">Add your first project to get started!</p>
       <button @click="openAddModal" class="btn-primary" v-if="id === currentUserId">Add project</button>
     </div>
 
-
+    <div v-else>
     <!-- Gallery View -->
     <div v-if="viewMode === 'gallery'" class="projects-grid">
       <ProjectCard
@@ -69,7 +73,7 @@
           <button v-if="id === currentUserId" class="btn-sm btn-danger" @click="deleteProject(project.id)">Delete</button>
         </div>
       </div>
-    </div>
+    </div> </div>
 
     <div v-if="showModal" class="modal-overlay">
       <div class="modal-content">
@@ -89,9 +93,7 @@
     
     </div>
 
-    <div v-if="isLoading" class="loading-container">
-      <div class="loading-spinner"></div>
-    </div>
+    
 
   </div>
 </template>

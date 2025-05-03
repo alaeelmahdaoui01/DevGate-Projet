@@ -158,7 +158,8 @@
           <ProjectsPerDay :userId="id" />
           <ProgressOverTime :userId="id" />
           <!--SkillsChart :userId="id" /-->
-          <SkillsChart :key="id" :userId="id" />
+          <br>
+          <SkillsChart :id="id" />
         </div>
       </div>
 
@@ -184,7 +185,7 @@
   import { waitForAuthInit, getUser } from '@/Firebase/Authentification/getUser';
   import ProjectsPerDay from '@/components/ProjectPerMonth.vue'
   import ProgressOverTime from '@/components/ProgressOverTime.vue'
-    import SkillsChart from '@/components/SkillChart.vue'
+    import SkillsChart from '@/components/VisCompskills1.vue'
   import EditModal from '@/views/EditProfile.vue'
 
   export default {
