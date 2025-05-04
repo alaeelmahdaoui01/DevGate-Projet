@@ -11,25 +11,44 @@
         <option value="edited objective">Edited Objective</option>
         <option value="added skill">Added Skill</option>
         <option value="edited skill">Edited Skill</option>
-        <!-- add more types if you have -->
       </select>
     </div>
 
-    <div class="timeline-container">
+    <div v-if="loading" class="loading-container">
+      <div class="loading-spinner"></div>
+    </div>
+
+    <div v-else class="timeline-container">
       <div
         v-for="item in filteredTimelineItems"
         :key="item.id"
         class="timeline-item"
         @click="goToUserDashboard(item.userId)"
-        style="cursor: pointer;"
       >
-        <h2 class="timeline-item-title">
-          {{ item.userName }} {{ item.type }} "{{ item.title }}"
-        </h2>
-        <p class="timeline-item-date">
-          {{ formatDate(item.date) }}
-        </p>
-        <p class="timeline-item-description">
+        <div class="user-info">
+          <img 
+            :src="item.image" 
+            alt="User Avatar" 
+            class="user-avatar"
+            @error="handleImageError"
+            v-if="item.image"
+          />
+          <img 
+            src="https://www.shutterstock.com/image-vector/default-avatar-profile-icon-vector-600nw-1745180411.jpg" 
+            alt="Default User Avatar" 
+            class="user-avatar"
+            v-else
+          />
+          <div>
+            <h2 class="timeline-item-title">
+              {{ item.userName }} <span class="action-text">{{ item.type }}</span> "{{ item.title }}"
+            </h2>
+            <p class="timeline-item-date">
+              {{ formatDate(item.date) }}
+            </p>
+          </div>
+        </div>
+        <p v-if="item.description" class="timeline-item-description">
           {{ item.description }}
         </p>
       </div>
@@ -46,7 +65,8 @@ export default {
   data() {
     return {
       timelineItems: [],
-      selectedType: ""
+      selectedType: "",
+      loading: true
     }
   },
   computed: {
@@ -59,6 +79,7 @@ export default {
   },
   async mounted() {
     await this.fetchTimeline()
+    this.loading = false
   },
   methods: {
     async fetchTimeline() {
@@ -72,6 +93,7 @@ export default {
           const data = timelineDoc.data()
 
           let userName = 'Unknown'
+          let userImage = '/default-avatar.png'
 
           if (data.userId) {
             const userRef = doc(db, 'users', data.userId)
@@ -79,6 +101,7 @@ export default {
             if (userSnap.exists()) {
               const userData = userSnap.data()
               userName = userData.displayName || userData.name || 'Unknown'
+              userImage = userData.photoURL || userImage
             }
           }
 
@@ -90,6 +113,7 @@ export default {
             title: data.title,
             description: data.description || "",
             date: data.date ? data.date.toDate() : new Date(),
+            image: userImage,
           })
         }
 
@@ -97,17 +121,28 @@ export default {
 
       } catch (error) {
         console.error('Error fetching timeline:', error)
+        this.loading = false
       }
     },
 
     formatDate(date) {
       if (!(date instanceof Date)) return ''
-      return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+      return date.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      })
     },
 
     goToUserDashboard(userId) {
       if (!userId) return
       this.$router.push(`/dashboard/${userId}`)
+    },
+    
+    handleImageError(e) {
+      e.target.src = 'https://www.shutterstock.com/image-vector/default-avatar-profile-icon-vector-600nw-1745180411.jpg';
     }
   }
 }
@@ -115,37 +150,32 @@ export default {
 
 <style scoped>
 .timeline-page {
-  padding: 1.5rem;
+  padding: 2rem;
   padding-top: 6rem;
-  max-width: 1200px;
+  max-width: 800px;
   margin: 0 auto;
   min-height: 100vh;
-  background: linear-gradient(135deg, #f0f4ff, #dbeafe);
+  background: linear-gradient(135deg, #f8fafc, #f1f5f9);
 }
 
 .title {
-  font-size: 2rem;
+  font-size: 2.5rem;
   font-weight: 700;
-  color: #3b82f6;
-  position: relative;
+  color: #1e3a8a;
   margin-bottom: 2rem;
-  background: rgba(255, 255, 255, 0.95);
-  padding: 1.5rem;
-  border-radius: 1rem;
   text-align: center;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  position: relative;
+  padding-bottom: 0.5rem;
 }
 
 .title::after {
   content: '';
   position: absolute;
-  bottom: 8px;
+  bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 50px;
-  height: 3px;
+  width: 80px;
+  height: 4px;
   background: linear-gradient(90deg, #3b82f6, #8b5cf6);
   border-radius: 2px;
 }
@@ -155,23 +185,36 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  max-width: 300px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.filter-container label {
+  font-weight: 500;
+  color: #334155;
 }
 
 .filter-select {
-  padding: 0.5rem;
+  padding: 0.75rem;
   font-size: 1rem;
   border-radius: 0.5rem;
-  border: 1px solid #cbd5e1;
+  border: 1px solid #e2e8f0;
   background-color: #ffffff;
   color: #1e293b;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1em;
 }
 
 .filter-select:focus {
   border-color: #3b82f6;
   outline: none;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
 .timeline-container {
@@ -181,41 +224,101 @@ export default {
 }
 
 .timeline-item {
-  background: rgba(255, 255, 255, 0.95);
+  background: #ffffff;
   padding: 1.5rem;
-  border-radius: 0.75rem;
-  box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1);
-  border: 1px solid rgba(203, 213, 225, 0.25);
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+  border: 1px solid #e2e8f0;
   transition: all 0.3s ease;
+  cursor: pointer;
 }
 
 .timeline-item:hover {
-  transform: translateY(-2px);
-  border-color: rgba(59, 130, 246, 0.35);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border-color: #93c5fd;
 }
 
-.timeline-item-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #1e40af;
-  margin-bottom: 0.5rem;
-}
-
-.timeline-item-date {
-  font-size: 0.875rem;
-  color: #64748b;
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
   margin-bottom: 1rem;
 }
 
+.user-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e2e8f0;
+}
+
+.timeline-item-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.action-text {
+  color: #3b82f6;
+  font-weight: 500;
+}
+
+.timeline-item-date {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin: 0.25rem 0 0;
+}
+
 .timeline-item-description {
-  font-size: 1rem;
-  color: #4b5563;
+  font-size: 0.95rem;
+  color: #475569;
   line-height: 1.6;
+  padding-top: 0.5rem;
+  border-top: 1px solid #f1f5f9;
+  margin-top: 1rem;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #e2e8f0;
+  border-top: 4px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 @media (max-width: 768px) {
   .timeline-page {
+    padding: 1.5rem;
     padding-top: 5rem;
+  }
+  
+  .title {
+    font-size: 2rem;
+  }
+  
+  .timeline-item {
+    padding: 1.25rem;
+  }
+  
+  .user-avatar {
+    width: 40px;
+    height: 40px;
   }
 }
 </style>

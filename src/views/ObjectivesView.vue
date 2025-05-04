@@ -1,13 +1,20 @@
 <template>
     <div class="p-6">
       <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold">My Objectives</h1>
+        <h1 class="text-2xl font-bold">Objectives</h1>
         <button v-if="id === currentUserId" @click="openAddModal" class="btn-primary">+ Add Objective</button>
       </div>
 
-      <div v-if="!isLoading && objectives.length === 0" class="text-center text-gray-500 mt-8">
-        No objectives found. Click "+ Add Objective" to create one!
-        </div>
+      <div v-if="isLoading" class="loading-container">
+      <div class="loading-spinner"></div>
+    </div>
+
+      <div v-else-if="!isLoading && objectives.length === 0" class="empty-state">
+      <div class="empty-icon">🎯</div>
+      <p>No objectives found.</p> <p v-if="id === currentUserId">Add your first objective to get started!</p>
+      <button @click="openAddModal" class="btn-primary" v-if="id === currentUserId">Add objective</button>
+    </div>
+    
         <div v-else>
             <div
                 v-for="objective in objectives"
@@ -41,8 +48,9 @@
                 </div>
                 </div>
                 <div class="project-actions">
-                <button v-if="id === this.currentUserId" class="btn-sm" @click="editObjective(objective)">Track progress</button>
-                <button v-if="id === this.currentUserId" @click="deleteObjective(objective.id)" class="action-btn delete-btn">
+                  
+                <button v-if="id === currentUserId" class="btn-sm" @click="editObjective(objective)">Track progress</button>
+                <button v-if="id === currentUserId" @click="deleteObjective(objective.id)" class="action-btn delete-btn">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M3 6h18"></path>
                     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -63,27 +71,32 @@
           @saved="onObjectiveSaved"
         />
       </div>
-      <div v-if="isLoading">Loading...</div>
+      
     </div>
 
   </template>
   
+
+  
   <script>
   import { doc, getDoc } from 'firebase/firestore'
   import { db } from '@/Firebase/config'
-  import { getAuth } from 'firebase/auth';
-
+  import { getAuth, onAuthStateChanged } from 'firebase/auth';
   import CreateObjectiveModal from '@/components/createObjective.vue';
-  import EditObjectiveModal from '@/components/EditObjective.vue' ; 
-
-  
+  import EditObjectiveModal from '@/components/EditObjective.vue';
   import { deleteObjective } from '@/Firebase/Firestore/deleteObjective';
   
   export default {
     name: 'ObjectivesPage',
     components: {
-        CreateObjectiveModal,
-        EditObjectiveModal
+      CreateObjectiveModal,
+      EditObjectiveModal
+    },
+    props: {
+      id: {
+        type: String,
+        required: true
+      }
     },
     data() {
       return {
@@ -96,107 +109,134 @@
         userId: '',
       }
     },
-    computed: {
-      
+    created() {
+      this.setupAuthListener();
     },
     methods: {
-      async fetchCurrentUser() {
-      const auth = getAuth();
-      const user = auth.currentUser;
-      if (user) {
-        this.currentUserId = user.uid;
-      }
-    },
-    created() {
-    this.fetchCurrentUser(); // Fetch current user ID when component is created
-  },
+      setupAuthListener() {
+        const auth = getAuth();
+        onAuthStateChanged(auth, (user) => {
+          if (user) {
+            this.currentUserId = user.uid;
+            // Now that we have the current user, fetch objectives
+            this.fetchObjectives();
+          } else {
+            this.currentUserId = null;
+          }
+        });
+      },
       onObjectiveSaved() {
-        this.fetchObjectives() // Refresh the projects list
-        this.showModal = false
-        this.showEditModal = false
+        this.fetchObjectives();
+        this.showModal = false;
+        this.showEditModal = false;
       },
       openAddModal() {
-        this.selectedObjective = null
-        this.showModal = true
-        this.showEditModal = false
+        this.selectedObjective = null;
+        this.showModal = true;
+        this.showEditModal = false;
       },
       editObjective(objective) {
-        console.log(objective); // Debugging
-        this.showModal = false
-        this.showEditModal = true
-        this.selectedObjective = objective
+        this.showModal = false;
+        this.showEditModal = true;
+        this.selectedObjective = objective;
       },
       async deleteObjective(id) {
         if (confirm('Are you sure you want to delete this objective?')) {
-            try {
+          try {
             await deleteObjective(id, this.userId);
             this.fetchObjectives();
-            } catch (error) {
+          } catch (error) {
             alert('Error deleting objective');
-            }
+          }
         }
-        },
+      },
       closeModal() {
-        this.showModal = false
-        this.showEditModal = false
+        this.showModal = false;
+        this.showEditModal = false;
       },
       async fetchObjectives() {
-            this.isLoading = true;
-            try {
-                const userDocRef = doc(db, 'users', this.id);
-                const userDocSnap = await getDoc(userDocRef);
-
-                if (userDocSnap.exists()) {
-                    const userData = userDocSnap.data();
-                    const userObjectives = userData.objectives || [];
-                    const fetchedObjectives = [];
-
-                    this.userId = userDocSnap.id;
-
-
-                    for (const obj of userObjectives) {
-                        const objDoc = await getDoc(doc(db, 'objectives', obj.id));
-                        if (objDoc.exists()) {
-                            fetchedObjectives.push({ id: obj.id, ...objDoc.data() });
-                        }
-                    }
-
-                    this.objectives = fetchedObjectives;
-                }
-            } catch (error) {
-                console.error("Error fetching objectives:", error);
+        this.isLoading = true;
+        try {
+          const userDocRef = doc(db, 'users', this.id);
+          const userDocSnap = await getDoc(userDocRef);
+  
+          if (userDocSnap.exists()) {
+            const userData = userDocSnap.data();
+            const userObjectives = userData.objectives || [];
+            const fetchedObjectives = [];
+  
+            this.userId = userDocSnap.id;
+  
+            for (const obj of userObjectives) {
+              const objDoc = await getDoc(doc(db, 'objectives', obj.id));
+              if (objDoc.exists()) {
+                fetchedObjectives.push({ id: obj.id, ...objDoc.data() });
+              }
             }
-            this.isLoading = false;
+  
+            this.objectives = fetchedObjectives;
+          }
+        } catch (error) {
+          console.error("Error fetching objectives:", error);
         }
-    },
-    //mounted() {
-     // this.fetchObjectives()
-    // },
-
-
-    props: {
-        id: {
-            type: String,
-            required: true
-        }
+        this.isLoading = false;
+      }
     },
     watch: {
-        id: {
-            immediate: true,
-            handler() {
-                this.fetchObjectives();
-            }
+      id: {
+        immediate: true,
+        handler() {
+          if (this.currentUserId) {
+            this.fetchObjectives();
+          }
         }
+      }
     }
   }
   </script>
   
   
-  
   <style scoped>
+  .btn-primary {
+  background: linear-gradient(to right, #3b82f6, #6366f1);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 5px rgba(59, 130, 246, 0.2);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  margin-top: 2rem;
+  border: 1px dashed rgba(203, 213, 225, 0.5);
+}
+
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.empty-state p {
+  color: #64748b;
+  margin-bottom: 1.5rem;
+}
   /* Base container styles */
   .p-6 {
-    padding: 1.5rem;
+    padding: 4rem;
     padding-top: 6rem;
     max-width: 1200px;
     margin: 0 auto;
@@ -396,7 +436,7 @@
   /* Modal */
   .modal-overlay {
     position: fixed;
-    top: 0;
+    top: 60px;
     left: 0;
     right: 0;
     bottom: 0;
@@ -598,5 +638,27 @@
   margin-top: 2rem;
   border: 1px dashed #cbd5e1;
 }
-  
+
+
+/* Loading State */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(59, 130, 246, 0.1);
+  border-top: 4px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
   </style>

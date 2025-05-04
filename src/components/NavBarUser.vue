@@ -7,6 +7,7 @@
               <router-link :to="'/objectives/' + user.uid" class="button">Objectives</router-link>
               <router-link :to="'/skills/' + user.uid" class="button">Skills</router-link>
               <router-link to="/timeline" class="button">Timeline</router-link>
+              <!--router-link :to="'/viscomp/' + user.uid" class="button">Viscomp</router-link-->
           </div>
 
           <div class="search-container">
@@ -31,13 +32,17 @@
                       class="search-result-item"
                       @click="goToUserProfile(result.id)"
                   >
-                      <img :src="result.photoURL || 'default-avatar-url'" class="search-result-avatar">
+                      <img :src="result.photoURL || userAvatar" class="search-result-avatar">
                       <div class="search-result-info">
                           <div class="search-result-name">{{ result.displayName }}</div>
                           <div class="search-result-email">{{ result.email }}</div>
                       </div>
                   </div>
               </div>
+              <div v-else-if="searchResults.length == 0 && searchQuery" class="search-results-dropdown">
+                <div class="no-results">No results found</div>
+              </div>
+
           </div>
 
           <div class="usermenu">
@@ -134,7 +139,11 @@ async searchUsers() {
                 this.searchResults = [];
             }
         });
-    }
+    },
+    computed:  {userAvatar() {
+    return this.userProfile?.photoURL || 'https://www.shutterstock.com/image-vector/default-avatar-profile-icon-vector-600nw-1745180411.jpg';
+  }
+}
 }
 </script>
   
@@ -369,4 +378,80 @@ async searchUsers() {
 .navbar-container {
   animation: slideDown 0.5s ease-out forwards;
 }
+
+.no-results {
+  padding: 12px;
+  color: #999;
+  font-style: italic;
+  text-align: center;
+  background-color: #fafafa;
+  border-top: 1px solid #eee;
+}
+
+.search-results-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 0.5rem;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    max-height: 300px;
+    overflow-y: auto;
+    transition: all 0.3s ease-in-out;
+}
+
+.search-result-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 14px;
+    gap: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.search-result-item:last-child {
+    border-bottom: none;
+}
+
+.search-result-item:hover {
+    background: rgba(59, 130, 246, 0.1);
+    transform: translateX(2px);
+}
+
+.search-result-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}
+
+.search-result-item:hover .search-result-avatar {
+    transform: scale(1.05);
+}
+
+.search-result-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.search-result-name {
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.search-result-email {
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
 </style>

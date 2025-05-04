@@ -133,7 +133,7 @@ export default {
       userId: user.uid,
       type: "added objective",
       title: objective.title,
-      description: "Created a new objective.",
+      description: objective.description,
       date: serverTimestamp()
     })
           this.message = "Objective created successfully!"

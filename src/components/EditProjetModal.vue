@@ -146,7 +146,7 @@ try {
     userId: userId,
     type: 'Edited Project',
     title: this.title,
-    description: `Edited the project "${this.title}"`,
+    description: this.description,
     date: serverTimestamp()
   })
 } catch (err) {

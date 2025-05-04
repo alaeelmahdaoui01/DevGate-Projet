@@ -4,24 +4,35 @@
       <aside class="sidebar">
   <div class="profile-section">
     <img
-      :src="userProfile?.photoURL || 'https://via.placeholder.com/150'"
+      :src="userProfile?.photoURL || userAvatar"
       alt="User Avatar"
       class="profile-avatar"
     />
     <h2 class="profile-name">{{ userProfile?.displayName || 'Loading...' }}</h2>
     <p class="profile-bio" v-if="userProfile?.status">{{ userProfile?.status }}</p>
+    <br>
     <ul class="profile-details">
-      <li v-if="userProfile?.email"><strong>Email: </strong> {{ userProfile.email }}</li>
-      <li><strong>Repositories: </strong> {{ projects.length }}</li>
-      <li v-if="userProfile?.location"><strong>Location: </strong> {{ userProfile.location }}</li>
-      <li v-if="userProfile?.linkedin"><strong>LinkedIn: </strong> 
-        <a :href="userProfile.linkedin" target="_blank">{{ userProfile.linkedin }}</a>
+      <li v-if="userProfile?.email" class="b"><strong>Email : </strong> {{ userProfile.email }}</li>
+      <li class="a"><strong>Repositories : </strong> {{ projects.length }}</li>
+      <li v-if="userProfile?.location"><strong>Location : </strong> {{ userProfile.location }}</li>
+      <li v-if="userProfile?.createdAt"><strong>Member Since : </strong> {{ formatDate(userProfile.createdAt) }}</li>
+      <li v-if="userProfile?.linkedin"><strong>LinkedIn : </strong> 
+        <a :href="userProfile.linkedin" target="_blank" class="link">{{ userProfile.linkedin }}</a>
       </li>
-    </ul>
-
+      <li v-if="userProfile?.bio" class="bio"><strong>Bio : </strong> {{ userProfile.bio }}</li>
+  </ul>
+    <br>
     <!-- Skills Section -->
-    <div v-if="userProfile && userProfile.skills && userProfile.skills.length" class="skills-section">
-      <h3>Skills</h3>
+    <div v-if="userProfile && userProfile.skills && userProfile.skills.length" class="skills-section" style="position: relative;">
+      <div class="skills-header">
+      <h3 class="skills-title">Skills</h3>
+      <button @click="goToSkills()" class="view-all-btn1">
+            View All Skills
+            <svg xmlns="http://www.w3.org/2000/svg" class="btn-icon1" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+            </svg>
+          </button>
+        </div>
       <ul class="skills-list">
         <li v-for="skill in userProfile.skills" :key="skill" class="skill-item">
           {{ skill.name }}
@@ -29,7 +40,7 @@
       </ul>
     </div>
   </div>
-
+  <br>
   <button 
     v-if="isCurrentUser"
     class="edit-profile-btn"
@@ -44,7 +55,7 @@
       <main class="main-content">
         <!-- Projects Section -->
         <div class="section-header">
-          <h1>Projects</h1>
+          <h1 class="text-2xl font-bold">Projects</h1>
           <button @click="goToProject()" class="view-all-btn">
             View All Projects
             <svg xmlns="http://www.w3.org/2000/svg" class="btn-icon" viewBox="0 0 20 20" fill="currentColor">
@@ -52,12 +63,17 @@
             </svg>
           </button>
         </div>
-        <div v-if="!isLoading && projects.length === 0" class="empty-state">
+
+        <div v-if="isLoading" class="loading-container">
+          <div class="loading-spinner"></div>
+        </div>
+
+        <div v-else-if="!isLoading && projects.length === 0" class="empty-state">
           No projects found.
         </div>
         <div v-else class="card-grid">
             <div
-            v-for="project in projects.slice(0, 3)"
+            v-for="project in projects.slice(0, 2)"
             :key="project.id"
             class="project-card"
             >
@@ -87,10 +103,10 @@
             </div>
             </div>
         </div>
-  
+        <br><br>
         <!-- Objectives Section -->
         <div class="section-header">
-          <h1>Objectives</h1>
+          <h1 class="text-2xl font-bold">Objectives</h1>
           <button @click="goToObjective()" class="view-all-btn">
             View All Objectives
             <svg xmlns="http://www.w3.org/2000/svg" class="btn-icon" viewBox="0 0 20 20" fill="currentColor">
@@ -98,12 +114,17 @@
             </svg>
           </button>
         </div>
-        <div v-if="!isLoading && objectives.length === 0" class="empty-state">
+
+        <div v-if="isLoading" class="loading-container">
+          <div class="loading-spinner"></div>
+        </div>
+
+        <div v-else-if="!isLoading && objectives.length === 0" class="empty-state">
           No objectives found.
         </div>
         <div v-else class="card-grid">
           <div 
-            v-for="objective in objectives.slice(0, 3)" 
+            v-for="objective in objectives.slice(0, 2)" 
             :key="objective.id" 
             class="objective-card"
           >
@@ -130,16 +151,31 @@
           </div>
         </div>
 
-
+        <br><br><br><br>
         <div class="visualization-section">
-        <h1 class="visualization-title">Visualization</h1>
+        <div class="c">
+        <h1 class="text-2xl font-bold">Visualisation</h1></div>
+        <br>
         <div class="visualization-content">
           <ProjectsPerDay :userId="id" />
           <ProgressOverTime :userId="id" />
+          <!--SkillsChart :userId="id" /-->
+          <br>
+          <SkillsChart :id="id" />
         </div>
       </div>
 
       </main>
+
+      <div v-if="showModal" class="modal-overlay">
+        <div v-if="showModal" class="modal-content">
+        <EditModal 
+          :id="id"
+          @close="closeModal"
+          @save="updateUserProfile"
+        />
+      </div></div>
+
     </div>
 </template>
 
@@ -151,10 +187,12 @@
   import { waitForAuthInit, getUser } from '@/Firebase/Authentification/getUser';
   import ProjectsPerDay from '@/components/ProjectPerMonth.vue'
   import ProgressOverTime from '@/components/ProgressOverTime.vue'
+    import SkillsChart from '@/components/VisCompskills1.vue'
+  import EditModal from '@/views/EditProfile.vue'
 
   export default {
     name: 'DashboardView',
-    components: { ProjectsPerDay, ProgressOverTime },
+    components: { ProjectsPerDay, ProgressOverTime, EditModal, SkillsChart},
     props: {
       id: {  
         type: String,
@@ -163,6 +201,7 @@
     },
     data() {
       return {
+        showModal:false,
         isLoading: false,
         projects: [],
         objectives: [],
@@ -180,11 +219,23 @@
   }
     },
     methods: {
+      formatDate(timestamp) {
+        if (!timestamp) return '';
+        const date = timestamp.toDate(); // Convert Firestore timestamp to Date
+        return date.toLocaleDateString('en-US', { 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        });
+      },
         goToProject() {
-  this.$router.push(`/projects/${this.id}`);
-},goToObjective() {
-  this.$router.push(`/objectives/${this.id}`);
-},
+          this.$router.push(`/projects/${this.id}`);
+        },goToObjective() {
+          this.$router.push(`/objectives/${this.id}`);
+        },
+        goToSkills() {
+          this.$router.push(`/skills/${this.id}`);
+        },
       async fetchUserData() {
         this.isLoading = true;
         try {
@@ -246,8 +297,15 @@
         }
       },
       editProfile() {
-        this.$router.push(`/editprofile/${this.id}`);
+        this.showModal= true;
       },
+      closeModal(){
+        this.showModal= false;
+      },
+      updateUserProfile(updatedProfile){
+        this.userProfile = { ...this.userProfile, ...updatedProfile };
+        this.closeModal();
+      }
     },
     watch: {
       id: {
@@ -261,7 +319,72 @@
   </script>
 
 <style scoped>
-  
+
+.bio {
+  font-size: 0.95rem; 
+  color: #4b5563; 
+  line-height: 1.6; 
+  margin-top: 1rem; 
+  padding: 0.75rem 1rem; 
+  background: rgba(59, 130, 246, 0.1); 
+  border-left: 4px solid #3b82f6; 
+  border-radius: 8px; 
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); 
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 100px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  /* Account for navbar height */
+  top: 60px; /* Adjust this value to match your navbar height */
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  max-width: 600px;
+  width: 100%;
+  max-height: calc(100vh - 200px); /* Adjust based on navbar */
+  overflow-y: auto;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+ @media (max-width: 768px) {
+  .modal-overlay {
+    top: 50px; /* Lower the modal less on smaller screens */
+  }
+
+  .modal-content {
+    max-height: calc(100vh - 100px); /* Adjust for smaller screens */
+   }
+} 
+
+/* Make sure buttons stay visible */
+.profile-edit-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 400px; /* Minimum height to ensure buttons are visible */
+}
+
+.form-actions {
+  margin-top: auto; /* Pushes buttons to bottom */
+  padding-top: 20px;
+  position: sticky;
+  bottom: 0;
+  background: white;
+}
+
+
   .dashboard-container {
     display: flex;
     min-height: 100vh;
@@ -785,4 +908,128 @@
   font-weight: 500;
 }
 
+.view-all-btn1 {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.view-all-btn1:hover {
+  background: rgba(59, 130, 246, 0.2);
+  transform: translateY(-1px);
+}
+
+.btn-icon1 {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+.a{
+  margin-left : 13px
+}
+
+.b{
+  margin-left : -11px
+}
+
+.skills-header {
+  display: flex;
+  justify-content: space-between; /* Space between title and button */
+  align-items: center; /* Align items vertically */
+  margin-bottom: 1rem; /* Add spacing below the header */
+}
+
+.skills-title {
+  text-align:left;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #3b82f6;
+  position: relative;
+  margin: 0;
+}
+
+.skills-title::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 50px;
+  height: 3px;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+  border-radius: 2px;
+}
+
+.text-2xl.font-bold {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #3b82f6;
+  position: relative;
+}
+
+.text-2xl.font-bold::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 50px;
+  height: 3px;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+  border-radius: 2px;
+}
+
+.c{
+  text-align : left ;
+}
+
+/* Loading State */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(59, 130, 246, 0.1);
+  border-top: 4px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.link {
+  color: #0a66c2; /* LinkedIn blue color */
+  font-weight: 500;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.link:hover {
+  color: #004182; /* Darker blue on hover */
+  text-decoration: underline; /* Add underline on hover */
+  transform: translateX(2px); /* Subtle movement on hover */
+}
+
+.link svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor; /* Use the same color as the text */
+}
   </style>

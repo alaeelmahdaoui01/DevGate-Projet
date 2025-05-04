@@ -1,8 +1,8 @@
 <template>
   <div class="p-6">
     <div class="flex justify-between items-center mb-6">
-      <h1 class="text-2xl font-bold">My Projects</h1>
-      <button v-if="id === currentUserId" @click="openAddModal" class="btn-primary">+ Add Project</button>
+      <h1 class="text-2xl font-bold">Projects</h1>
+      <button v-show="id === currentUserId" @click="openAddModal" class="btn-primary">+ Add Project</button>
     </div>
 
     <div class="flex justify-between items-center mb-4">
@@ -18,6 +18,17 @@
       </div>
     </div>
 
+    <div v-if="isLoading" class="loading-container">
+      <div class="loading-spinner"></div>
+    </div>
+
+    <div v-else-if="!isLoading && projects.length === 0" class="empty-state">
+      <div class="empty-icon">📂</div>
+      <p>No projects found.</p> <p v-if="id === currentUserId">Add your first project to get started!</p>
+      <button @click="openAddModal" class="btn-primary" v-if="id === currentUserId">Add project</button>
+    </div>
+
+    <div v-else>
     <!-- Gallery View -->
     <div v-if="viewMode === 'gallery'" class="projects-grid">
       <ProjectCard
@@ -62,19 +73,28 @@
           <button v-if="id === currentUserId" class="btn-sm btn-danger" @click="deleteProject(project.id)">Delete</button>
         </div>
       </div>
-    </div>
+    </div> </div>
 
     <div v-if="showModal" class="modal-overlay">
-      <ProjectModal @close="closeModal" @saved="onProjectSaved" />
+      <div class="modal-content">
+    <ProjectModal @close="closeModal" @saved="onProjectSaved" />
+  </div>
     </div>
 
     <div v-if="showEditModal" class="modal-overlay">
-      <EditProjectModal 
-        :selectedProject="selectedProject"
-        @close="closeModal"
-        @saved="onProjectSaved"
-      />
+
+      <div class="modal-content">
+    <EditProjectModal 
+      :selectedProject="selectedProject"
+      @close="closeModal"
+      @saved="onProjectSaved"
+    />
+  </div>
+    
     </div>
+
+    
+
   </div>
 </template>
 
@@ -101,6 +121,7 @@ export default {
   },
   data() {
     return {
+      isLoading: false,
       viewMode: 'gallery',
       searchStack: '',
       projects: [],
@@ -150,13 +171,15 @@ export default {
       this.selectedProject = project
     },
     async deleteProject(id) {
-      try {
-        await deleteProject(id, this.userId);
-        this.fetchProjects(); // Refresh list after deletion
-      } catch (error) {
-        alert('Error deleting project');
-      }
-    },
+        if (confirm('Are you sure you want to delete this project?')) {
+          try {
+            await deleteProject(id, this.userId);
+            this.fetchProjects();
+          } catch (error) {
+            alert('Error deleting project');
+          }
+        }
+      },
     closeModal() {
       this.showModal = false
       this.showEditModal = false
@@ -189,9 +212,10 @@ export default {
             this.isLoading = false;
         },
   },
-  created() {
-    this.fetchCurrentUser(); // Fetch current user ID when component is created
-  },
+  mounted() {
+  this.fetchCurrentUser();
+},
+
   //mounted() {
     //this.fetchProjects()
   //},
@@ -215,14 +239,76 @@ export default {
 
 
 <style scoped>
+
+/* Loading State */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(59, 130, 246, 0.1);
+  border-top: 4px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+.btn-primary {
+  background: linear-gradient(to right, #3b82f6, #6366f1);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 5px rgba(59, 130, 246, 0.2);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  margin-top: 2rem;
+  border: 1px dashed rgba(203, 213, 225, 0.5);
+}
+
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.empty-state p {
+  color: #64748b;
+  margin-bottom: 1.5rem;
+}
 /* Base container styles */
 .p-6 {
-  padding: 1.5rem;
+  padding: 4rem;
   padding-top: 6rem;
   max-width: 1200px;
   margin: 0 auto;
   min-height: 100vh;
   background: linear-gradient(135deg, #f0f4ff, #dbeafe);
+  position: relative;
+    overflow: hidden;
+    /* min-height: 100vh; */
 }
 
 /* Header section */
@@ -414,10 +500,10 @@ export default {
   margin-left: 1.5rem;
 }
 
-/* Modal */
+
 .modal-overlay {
   position: fixed;
-  top: 0;
+  top: 80px;
   left: 0;
   right: 0;
   bottom: 0;
@@ -428,6 +514,9 @@ export default {
   justify-content: center;
   padding: 1rem;
 }
+
+
+
 
 /* Responsive Design */
 @media (max-width: 1024px) {

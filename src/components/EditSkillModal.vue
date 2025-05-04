@@ -116,7 +116,7 @@
             userId: this.user.uid,
             type: "edited skill",
             title: updatedData.name,
-            description: "Updated an existing skill.",
+            description: updatedData.description,
             date: serverTimestamp(),
           });
   
