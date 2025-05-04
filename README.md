@@ -1,4 +1,11 @@
-# devgate
+# Dev Gate
+Le lien de déploiment du projet:
+https://devgate-app.web.app/ 
+
+Ce projet a été réalisé par:
+    - Khadija Lekbiri
+    - Alae El Mahdaoui
+    - Nour El Houda El Iamani
 
 ## Project setup
 ```
