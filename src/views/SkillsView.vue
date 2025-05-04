@@ -137,7 +137,7 @@
                 fetchedSkills.push({ id: skill.id, ...skillDoc.data() });
               }
             }
-  
+            fetchedSkills.sort((a, b) => b.createdAt.toMillis() - a.createdAt.toMillis());
             this.skills = fetchedSkills;
           }
         } catch (error) {

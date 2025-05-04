@@ -203,7 +203,7 @@ export default {
                             fetchedProjects.push({ id: proj.id, ...projDoc.data() });
                         }
                     }
-
+                    fetchedProjects.sort((a, b) => b.createdAt.toMillis() - a.createdAt.toMillis());
                     this.projects = fetchedProjects;
                 }
             } catch (error) {
