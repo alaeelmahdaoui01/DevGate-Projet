@@ -166,15 +166,15 @@ export default {
     handleFileChange(event) {
       const file = event.target.files[0]
       const reader = new FileReader()
-
+      
       reader.onload = () => {
           this.imageBase64 = reader.result // This is the Base64 string
       }
-
       if (file) {
           reader.readAsDataURL(file)
       }
     }
+    
   }
 }
 </script>
