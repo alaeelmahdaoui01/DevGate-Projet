@@ -208,7 +208,7 @@
 <style scoped>
 /* Base Container */
 .skills-container {
-  padding: 1.5rem;
+  padding:  4rem;
   padding-top: 6rem;
   max-width: 1200px;
   margin: 0 auto;

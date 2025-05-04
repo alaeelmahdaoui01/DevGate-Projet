@@ -300,12 +300,15 @@ export default {
 }
 /* Base container styles */
 .p-6 {
-  padding: 1.5rem;
+  padding: 4rem;
   padding-top: 6rem;
   max-width: 1200px;
   margin: 0 auto;
   min-height: 100vh;
   background: linear-gradient(135deg, #f0f4ff, #dbeafe);
+  position: relative;
+    overflow: hidden;
+    /* min-height: 100vh; */
 }
 
 /* Header section */
