@@ -1,6 +1,10 @@
 <template>
      <div class="dashboard-container">
       <!-- Sidebar -->
+
+      <div class="sidebars-wrapper">
+
+
       <aside class="sidebar">
   <div class="profile-section">
     <img
@@ -52,6 +56,8 @@
     Edit Profile
   </button>
 </aside>
+
+<aside class="sidebar2"> <SkillsChart2 :id="id" /> </aside> </div>
 
   
       <!-- Main Content -->
@@ -190,12 +196,13 @@
   import { waitForAuthInit, getUser } from '@/Firebase/Authentification/getUser';
   import ProjectsPerDay from '@/components/ProjectPerMonth.vue'
   import ProgressOverTime from '@/components/ProgressOverTime.vue'
-    import SkillsChart from '@/components/VisCompskills1.vue'
+  import SkillsChart from '@/components/VisCompskills1.vue'
+  import SkillsChart2 from '@/components/VisCompskill2.vue'
   import EditModal from '@/views/EditProfile.vue'
 
   export default {
     name: 'DashboardView',
-    components: { ProjectsPerDay, ProgressOverTime, EditModal, SkillsChart},
+    components: { ProjectsPerDay, ProgressOverTime, EditModal, SkillsChart, SkillsChart2},
     props: {
       id: {  
         type: String,
@@ -257,6 +264,7 @@ goToSkills() {
                 fetchedProjects.push({ id: proj.id, ...projDoc.data() });
               }
             }
+            fetchedProjects.sort((a, b) => b.createdAt.toMillis() - a.createdAt.toMillis());
             this.projects = fetchedProjects;
   
             // Fetch objectives
@@ -268,6 +276,7 @@ goToSkills() {
                 fetchedObjectives.push({ id: obj.id, ...objDoc.data() });
               }
             }
+            fetchedObjectives.sort((a, b) => b.createdAt.toMillis() - a.createdAt.toMillis());
             this.objectives = fetchedObjectives;
 
 
@@ -423,7 +432,8 @@ goToSkills() {
       transform: translate(20px, -20px) rotate(5deg);
     }
   }
-  
+ 
+
   .sidebar {
     flex: 1;
     max-width: 320px;
@@ -438,7 +448,25 @@ goToSkills() {
     top: 2rem;
     z-index: 2;
   }
-  
+
+  .sidebar2 {
+    margin-top: 100px;
+    flex: 1;
+    max-width: 320px;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 2rem;
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    height: fit-content;
+    position: sticky;
+    top: 2rem;
+    z-index: 2;
+  }
+
+
+
   .profile-avatar {
     width: 200px;
     height: 200px;

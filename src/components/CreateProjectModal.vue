@@ -29,8 +29,17 @@
         </div>
 
         <div class="form-group">
-          <label>Project Image</label>
-          <input type="file" accept="image/*" @change="handleFileChange" />
+          <label for="file-upload" class="custom-file-label">
+            <span>Choose File</span>
+            <input 
+              id="file-upload" 
+              type="file" 
+              accept="image/*" 
+              @change="handleFileChange" 
+              class="file-input"
+            />
+          </label>
+          <p v-if="imageFileName" class="file-name">{{ imageFileName }}</p>
         </div>
 
         <div class="button-group">
@@ -73,7 +82,8 @@ export default {
       githubLink: "",
       message: "",
       imageFile: null,
-      imageBase64:""
+      imageBase64:"",
+      imageFileName: ""
     }
   },
 
@@ -164,17 +174,16 @@ export default {
       }
     },
     handleFileChange(event) {
-      const file = event.target.files[0]
-      const reader = new FileReader()
-
+    const file = event.target.files[0];
+    if (file) {
+      this.imageFileName = file.name; // Store the file name
+      const reader = new FileReader();
       reader.onload = () => {
-          this.imageBase64 = reader.result // This is the Base64 string
-      }
-
-      if (file) {
-          reader.readAsDataURL(file)
-      }
+        this.imageBase64 = reader.result; // Convert file to Base64
+      };
+      reader.readAsDataURL(file);
     }
+  },
   }
 }
 </script>
@@ -232,6 +241,44 @@ export default {
   color: #475569;
 }
 
+/* Hide the default file input */
+.file-input {
+  display: none;
+}
+
+/* Custom file label */
+.custom-file-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(to right, #3b82f6, #6366f1);
+  color: black;
+  font-weight: bold;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  text-align: center;
+}
+
+.custom-file-label span{
+  color: white; 
+  font-weight : bold 
+}
+
+.custom-file-label:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+}
+
+/* Display the selected file name */
+.file-name {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: #475569;
+  text-align: center;
+} 
 .input {
   padding: 0.75rem;
   border: 1px solid #e2e8f0;

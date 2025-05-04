@@ -173,7 +173,7 @@
                 fetchedObjectives.push({ id: obj.id, ...objDoc.data() });
               }
             }
-  
+            fetchedObjectives.sort((a, b) => b.createdAt.toMillis() - a.createdAt.toMillis());
             this.objectives = fetchedObjectives;
           }
         } catch (error) {
